@@ -2,11 +2,21 @@ import unittest
 from src.backend.executor.nodeIterator import Iterator
 
 class TestIterator(unittest.TestCase):
+    def setUp(self):
+        self._list = list(range(2))
+        self._input = (ii for ii in self._list)
+
     def test_init(self):
-        self.assertEquals(Iterator().init(), None)
+        instance = Iterator(self._input)
+        self.assertEquals(
+          instance._input,
+          self._input
+        )
 
     def test_next(self):
-        self.assertEquals(Iterator().next(), None)
+        instance = Iterator(self._input)
+        self.assertEquals(instance.__next__(), None)
 
     def test_close(self):
-        self.assertEquals(Iterator().close(), None)
+        instance = Iterator(self._input)
+        self.assertEquals(instance.__close__(), None)

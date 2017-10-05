@@ -1,9 +1,9 @@
 class Iterator():
-    def init(self):
+    def __init__(self, _input):
+        self._input = _input
+
+    def __next__(self):
         pass
 
-    def next(self):
-        pass
-
-    def close(self):
+    def __close__(self):
         pass
