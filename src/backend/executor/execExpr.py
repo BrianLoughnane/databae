@@ -49,6 +49,7 @@ def execute(representation):
     while True:
         _next = master_generator.__next__()
         if _next == EOF:
+            master_generator.__close__()
             break
         values.append(_next)
 

@@ -44,9 +44,12 @@ class Selection(Iterator):
         _schema = self._input.schema
 
         if _next == self.EOF:
+          self._input.__close__()
           return self.EOF
+
         elif self._predicate(_schema, _next):
             return _next
+
         else:
             return self._get_next()
 
