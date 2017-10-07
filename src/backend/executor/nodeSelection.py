@@ -1,31 +1,7 @@
 from functools import partial
 
 from executor.nodeIterator import Iterator
-
-class Operator():
-    def __init__(self, operand1__name, operand2__name):
-        self.operand1__name = operand1__name
-        self.operand2__name = operand2__name
-
-    def check(self, schema, row):
-        operand1__index = schema.index(self.operand1__name)
-        operand1__value = row[operand1__index]
-        operand2__value = self.operand2__name
-
-        return self.operator(operand1__value, operand2__value)
-
-    def operator(self):
-        raise ValueError('Not implemented')
-
-class Equals(Operator):
-    operator = lambda _s, a, b: a == b
-
-class LessThan(Operator):
-    operator = lambda _s, a, b: a < b
-
-class GreaterThan(Operator):
-    operator = lambda _s, a, b: a > b
-
+from operators import operator_map
 
 class Selection(Iterator):
     '''
@@ -61,18 +37,14 @@ class Selection(Iterator):
 
     @staticmethod
     def parse_args(args):
-        operator_map = {
-            'EQUALS': Equals,
-            'LESS_THAN': LessThan,
-            'GREATER_THAN': GreaterThan,
-        }
-
-        as_string = ','.join(args)
+        # parse plan language into individual condition tuples
+        plan_string = ','.join(args)
         conditions = [
             condition_string.split(',') for condition_string
-            in as_string.split(',AND,')
+            in plan_string.split(',AND,')
         ]
 
+        # map condition tuples into Operator objects
         operators = []
         for condition in conditions:
             operand1 = condition[0]
@@ -84,6 +56,7 @@ class Selection(Iterator):
 
             operators.append(operator)
 
+        # return a function that predicates all operators
         def master_predicate(schema, row):
             for operator in operators:
                 if operator.check(schema, row) == False:

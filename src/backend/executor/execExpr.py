@@ -1,9 +1,8 @@
 from functools import partial, reduce
 
+from executor.nodeIterator import Iterator
 from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
-
-EOF = 'end of fun'
 
 def execute(representation):
     '''
@@ -19,9 +18,6 @@ def execute(representation):
 
     With an output of (5000, "Medium Cool (1969)")`
     '''
-    # reverse of the list (not in place)
-    # reversed_representation = representation[::-1]
-
     name_map = {
       "SCAN": Scan,
       "SELECTION": Selection,
@@ -45,13 +41,11 @@ def execute(representation):
     master_generator =  reduce(lambda a,b: a(b), pipeline)(leaf_node)
 
     values = []
-
     while True:
         _next = master_generator.__next__()
-        if _next == EOF:
+        if _next == Iterator.EOF:
             master_generator.__close__()
             break
         values.append(_next)
-
     return values
 
