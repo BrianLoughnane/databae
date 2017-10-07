@@ -23,16 +23,13 @@ class TestSelection(unittest.TestCase):
         sets pointer to child node
         sets pointer to predicate
         '''
-        instance = Selection(self._input, self._predicate)
+        instance = Selection(self._predicate, self._input)
 
         self.assertEquals(instance._input, self._input)
         self.assertEquals(instance._predicate, self._predicate)
 
     def test_next(self):
-        instance = Selection(
-          self._input,
-          self._predicate,
-        )
+        instance = Selection(self._predicate, self._input)
 
         first_passing = instance.__next__()
         first_passing__expected = self._data[2]
@@ -52,9 +49,7 @@ class TestSelection(unittest.TestCase):
         )
 
     def test_close(self):
-        instance = Selection(
-          self._input,
-          self._predicate
-        )
+        instance = Selection(self._predicate, self._input)
+
         self.assertEquals(instance.__close__(), None)
 

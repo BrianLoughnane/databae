@@ -8,6 +8,7 @@ class Scan(Iterator):
     '''
     def __init__(self, _input):
         self._input = _input
+        self.schema = self.__next__()
 
     def __next__(self):
         try:
