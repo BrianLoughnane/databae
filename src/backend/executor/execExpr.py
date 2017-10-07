@@ -1,5 +1,6 @@
 from functools import partial, reduce
 
+from executor.nodeDistinct import Distinct
 from executor.nodeIterator import Iterator
 from executor.nodeProjection import Projection
 from executor.nodeScan import Scan
@@ -21,6 +22,7 @@ def execute(representation):
     With an output of (5000, "Medium Cool (1969)")`
     '''
     name_map = {
+      "DISTINCT": Distinct,
       "PROJECTION": Projection,
       "SCAN": Scan,
       "SELECTION": Selection,

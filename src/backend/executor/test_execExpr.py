@@ -66,4 +66,69 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
+    def test_selection__projection__duplicates(self):
+        result = execute([
+            ["PROJECTION", ["age"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["33"],
+          ["33"],
+        ]
+        self.assertEquals(result, expected)
+
+    def test_selection__projection__sort__duplicates(self):
+        result = execute([
+            ["SORT", ["age"]],
+            ["PROJECTION", ["age"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["33"],
+          ["33"],
+        ]
+        self.assertEquals(result, expected)
+
+    def test_selection__projection__sort__distinct(self):
+        result = execute([
+            ["DISTINCT", [""]],
+            ["SORT", ["age"]],
+            ["PROJECTION", ["age"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["33"],
+        ]
+        self.assertEquals(result, expected)
+
+        result = execute([
+            ["DISTINCT", [""]],
+            ["SORT", ["major"]],
+            ["PROJECTION", ["major"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["econ"],
+        ]
+        self.assertEquals(result, expected)
+
+        result = execute([
+            ["DISTINCT", [""]],
+            ["SORT", ["name"]],
+            ["PROJECTION", ["name"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["Carolyn"],
+          ["Jason"],
+        ]
+        self.assertEquals(result, expected)
+
+
+
 
