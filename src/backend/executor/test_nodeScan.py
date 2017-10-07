@@ -1,5 +1,6 @@
 import unittest
-from src.backend.executor.nodeScan import Scan
+
+from executor.nodeScan import Scan
 
 FILE_PATH = 'src/backend/executor/'
 

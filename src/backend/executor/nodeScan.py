@@ -1,4 +1,4 @@
-from src.backend.executor.nodeIterator import Iterator
+from executor.nodeIterator import Iterator
 
 class Scan(Iterator):
     '''

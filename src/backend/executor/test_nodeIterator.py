@@ -1,5 +1,6 @@
 import unittest
-from src.backend.executor.nodeIterator import Iterator
+
+from executor.nodeIterator import Iterator
 
 class TestIterator(unittest.TestCase):
     def test_init(self):

@@ -1,7 +1,7 @@
 import unittest
 
-from src.backend.executor.nodeScan import Scan
-from src.backend.executor.nodeSelection import Selection
+from executor.nodeScan import Scan
+from executor.nodeSelection import Selection
 
 class TestSelection(unittest.TestCase):
     def setUp(self):
