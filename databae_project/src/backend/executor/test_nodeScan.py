@@ -1,7 +1,7 @@
 import unittest
 from src.backend.executor.nodeScan import Scan
 
-EOF = 'end of fun'
+FILE_PATH = 'src/backend/executor/'
 
 class TestScan(unittest.TestCase):
     def setUp(self):
@@ -29,7 +29,7 @@ class TestScan(unittest.TestCase):
 
         self.assertEquals(
           instance.__next__(),
-          EOF
+          instance.EOF
         )
 
     def test_close(self):

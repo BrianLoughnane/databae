@@ -1,9 +1,12 @@
 class Iterator():
-    def __init__(self, _input):
-        self._input = _input
+    EOF = 'end of fun'
+
+    def __init__(self):
+        raise ValueError('Not Implemented')
 
     def __next__(self):
-        pass
+        raise ValueError('Not Implemented')
 
     def __close__(self):
-        pass
+        raise ValueError('Not Implemented')
+
