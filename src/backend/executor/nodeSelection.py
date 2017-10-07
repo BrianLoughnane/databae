@@ -17,17 +17,15 @@ class Selection(Iterator):
 
     def _get_next(self):
         _next = self._input.__next__()
-        _schema = self._input.schema
 
         if _next == self.EOF:
-          self._input.__close__()
-          return self.EOF
+            self._input.__close__()
+            return self.EOF
 
-        elif self._predicate(_schema, _next):
+        if self._predicate(_next):
             return _next
 
-        else:
-            return self._get_next()
+        return self._get_next()
 
     def __next__(self):
         return self._get_next()
@@ -36,7 +34,7 @@ class Selection(Iterator):
         pass
 
     @staticmethod
-    def parse_args(args):
+    def parse_args(schema, args):
         # parse plan language into individual condition tuples
         plan_string = ','.join(args)
         conditions = [
@@ -63,5 +61,5 @@ class Selection(Iterator):
                     return False
             return True
 
-        return master_predicate
+        return partial(master_predicate, schema)
 

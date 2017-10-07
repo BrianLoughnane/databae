@@ -14,3 +14,7 @@ class Iterator():
     def parse_args(schema, args):
         return args
 
+    @staticmethod
+    def parse_schema(schema, args):
+        return schema
+

@@ -30,7 +30,7 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
-    def test_selection__equals__and__equals(self):
+    def test_selection__equals__and(self):
         result = execute([
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
             ["SCAN", [(ii for ii in self._data)]],
@@ -38,6 +38,18 @@ class TestExecute(unittest.TestCase):
         expected = [
           self._data[2],
           self._data[5],
+        ]
+        self.assertEquals(result, expected)
+
+    def test_selection__projection(self):
+        result = execute([
+            ["PROJECTION", ["name"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          [self._data[2][1]],
+          [self._data[5][1]],
         ]
         self.assertEquals(result, expected)
 
