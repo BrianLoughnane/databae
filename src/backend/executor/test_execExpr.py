@@ -53,3 +53,17 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
+    def test_selection__projection__sort(self):
+        result = execute([
+            ["SORT", ["name"]],
+            ["PROJECTION", ["name"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          [self._data[5][1]],
+          [self._data[2][1]],
+        ]
+        self.assertEquals(result, expected)
+
+

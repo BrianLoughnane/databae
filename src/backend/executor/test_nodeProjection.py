@@ -37,17 +37,18 @@ class TestProjection(unittest.TestCase):
         self.assertEquals(
           instance.__next__(),
           [
-            self._data[1][1],
+            self._data[0][1],
           ]
         )
 
         self.assertEquals(
           instance.__next__(),
           [
-            self._data[2][1],
+            self._data[1][1],
           ]
         )
 
+        instance.__next__() # 2
         instance.__next__() # 3
         instance.__next__() # 4
         instance.__next__() # 5

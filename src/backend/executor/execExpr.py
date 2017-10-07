@@ -4,6 +4,7 @@ from executor.nodeIterator import Iterator
 from executor.nodeProjection import Projection
 from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
+from executor.nodeSort import Sort
 
 def execute(representation):
     '''
@@ -23,6 +24,7 @@ def execute(representation):
       "PROJECTION": Projection,
       "SCAN": Scan,
       "SELECTION": Selection,
+      "SORT": Sort,
     }
 
     if not representation:

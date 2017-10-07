@@ -18,7 +18,7 @@ class TestSelection(unittest.TestCase):
           (7, 'Lori', 62, 'business')
         ]
         self._input = Scan((ii for ii in self._data))
-        self._predicate = lambda _schema, _row: _row[3] == 'econ'
+        self._predicate = lambda _row: _row[3] == 'econ'
 
     def test_init(self):
         '''
@@ -34,23 +34,21 @@ class TestSelection(unittest.TestCase):
     def test_next(self, scan_close_method):
         instance = Selection(self._predicate, self._input)
 
-        first_passing = instance.__next__()
-        first_passing__expected = self._data[2]
         self.assertEquals(
-            first_passing,
-            first_passing__expected
+            instance.__next__(),
+            self._data[2]
         )
 
         self.assertEquals(
-          instance.__next__(),
-          self._data[5]
+            instance.__next__(),
+            self._data[5]
         )
 
         self.assertFalse(scan_close_method.called)
 
         self.assertEquals(
-          instance.__next__(),
-          instance.EOF
+            instance.__next__(),
+            instance.EOF
         )
 
         self.assertTrue(scan_close_method.called)
