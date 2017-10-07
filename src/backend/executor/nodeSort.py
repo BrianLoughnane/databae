@@ -1,11 +1,16 @@
 from executor.nodeIterator import Iterator
 
 class Sort(Iterator):
-    def __init__(self, _keys, _input):
+    def __init__(self, _sorts, _input):
         self._input = _input
-        self._keys = _keys
+
         self._items = self._get_items()
-        self._sorted_items = sorted(self._items)
+        for _sort in _sorts:
+          self._items = sorted(self._items, key=_sort)
+
+          # for now, only supports sorting by a single key
+          break
+
         self._index = 0
 
     def _get_items(self):
@@ -20,7 +25,7 @@ class Sort(Iterator):
 
     def _get_next_sorted_item(self):
         try:
-            value = self._sorted_items[self._index]
+            value = self._items[self._index]
             self._index += 1
             return value
         except IndexError:
@@ -32,4 +37,16 @@ class Sort(Iterator):
 
     def __close__(self):
         pass
+
+    @staticmethod
+    def parse_args(schema, args):
+        schema_indices = [
+            schema.index(arg)
+            for arg in args
+        ]
+
+        return [
+          lambda row: row[schema_index]
+          for schema_index in schema_indices
+        ]
 
