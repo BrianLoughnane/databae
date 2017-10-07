@@ -45,19 +45,11 @@ def execute(representation):
         schema = node_class.parse_schema(list(schema), args)
         pipeline.append(partial(node_class, parsed_args))
 
-    # def _reduce(func, iterable, starting_value):
-      # reduced = starting_value or iterable.pop(0)
-      # for index, value in enumerate(iterable):
-        # reduced = func(reduced, value)
-      # return reduced
-    # pipeline.reverse()
-    # master_generator = reduce(lambda a,b: a(b), pipeline)(leaf_node)
-    # master_generator = reduce(lambda a,b: partial(a,b), pipeline)()
-    # master_generator = reduce(lambda a,b: b(a()), pipeline)
-
-    master_generator = leaf_node
-    for bound in pipeline:
-        master_generator = bound(master_generator)
+    master_generator = reduce(
+        lambda accum, next_item: next_item(accum),
+        pipeline,
+        leaf_node
+    )
 
     values = []
     while True:
