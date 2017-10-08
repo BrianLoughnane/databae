@@ -166,3 +166,16 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
+        result = execute([
+            ["DISTINCT", [""]],
+            ["SORT", ["name"]],
+            ["PROJECTION", ["name", "major"]],
+            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SCAN", [(ii for ii in self._data)]],
+        ])
+        expected = [
+          ["Carolyn", "econ"],
+          ["Jason", "econ"],
+        ]
+        self.assertEquals(result, expected)
+
