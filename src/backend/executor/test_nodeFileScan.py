@@ -13,7 +13,7 @@ class TestFileScan(unittest.TestCase):
             ['3', 'Grumpier Old Men (1995)', 'Comedy|Romance'],
         ]
         self._input = FILE_PATH
-        self._with_comma = ['11', '"American President, The (1995)"','Comedy|Drama|Romance']
+        self._with_comma = ['11', 'American President, The (1995)','Comedy|Drama|Romance']
 
     def test_init(self):
         instance = FileScan(self._input)
