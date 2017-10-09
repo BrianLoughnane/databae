@@ -194,6 +194,7 @@ class TestExecute(unittest.TestCase):
         self.assertEquals(result, expected)
 
     def test_filescan_sort(self):
+        FILE_PATH = 'test_files/ml-20m/movies.csv'
         result = execute([
             ["DISTINCT", [""]],
             ["SORT", ["genres", "title"]],

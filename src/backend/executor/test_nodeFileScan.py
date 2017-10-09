@@ -17,7 +17,8 @@ class TestFileScan(unittest.TestCase):
 
     def test_init(self):
         instance = FileScan(self._input)
-        self.assertEquals(instance.file_name, self._input)
+        self.assertTrue(instance._file)
+        self.assertTrue(instance.reader)
 
     def test_next(self):
         instance = FileScan(self._input)

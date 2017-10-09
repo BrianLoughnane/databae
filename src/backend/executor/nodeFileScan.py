@@ -9,42 +9,28 @@ class FileScan(Iterator):
     END_OF_FILE = ''
 
     def __init__(self, file_name):
-        self.file_name = file_name
-        self.num_reads = 0
+        self._file = open(file_name, 'r')
+        self.reader = csv.reader(self._file, delimiter=',')
 
     def __next__(self):
         '''
         The magical python will only go to disc if the next
         line is not already in the buffer pool.
-
-        Another piece of magic is that once we're past block 1,
-        calling next over all of those records (in the for loop)
-        won't take up memory because they are not returned to a variable.
         '''
-        with open(self.file_name, 'r') as _file:
-            reader = csv.reader(_file, delimiter=',')
+        try:
+            next_line = next(self.reader)
+        except StopIteration:
+            return self.EOF
+        return next_line
 
-            for line_number in range(0, self.num_reads):
-                try:
-                    next(reader)
-                except StopIteration:
-                    return self.EOF
-
-            try:
-                next_line = next(reader)
-            except StopIteration:
-                return self.EOF
-
-            self.num_reads += 1
-            return next_line
+    def __del__(self):
+        self._file.close()
 
     def __close__(self):
-        pass
+        self.__del__()
 
     def get_schema(self):
-        with open(self.file_name, 'r') as _file:
-            reader = csv.reader(_file, delimiter=',')
-            return next(reader)
+        return next(self.reader)
 
 # lines manual implementation
 
