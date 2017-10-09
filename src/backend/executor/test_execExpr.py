@@ -2,6 +2,8 @@ import unittest
 
 from executor.execExpr import execute
 
+FILE_PATH = 'test_files/sample_movies.csv'
+
 class TestExecute(unittest.TestCase):
     def setUp(self):
         self._data = [
@@ -178,4 +180,30 @@ class TestExecute(unittest.TestCase):
           ["Jason", "econ"],
         ]
         self.assertEquals(result, expected)
+
+    def test_filescan(self):
+        result = execute([
+            ["DISTINCT", [""]],
+            ["PROJECTION", ["movieId", "title"]],
+            ["SELECTION", ["movieId", "EQUALS", "33"]],
+            ["FILESCAN", [FILE_PATH]],
+        ])
+        expected = [
+          ['33', 'Wings of Courage (1995)'],
+        ]
+        self.assertEquals(result, expected)
+
+    def test_filescan_sort(self):
+        result = execute([
+            ["DISTINCT", [""]],
+            ["SORT", ["genres", "title"]],
+            ["PROJECTION", ["movieId", "title", "genres"]],
+            ["SELECTION", []],
+            ["FILESCAN", [FILE_PATH]],
+        ])
+        # TODO implement Limit, then come back to this
+        # expected = [
+          # ['33', 'Wings of Courage (1995)'],
+        # ]
+        # self.assertEquals(result, expected)
 

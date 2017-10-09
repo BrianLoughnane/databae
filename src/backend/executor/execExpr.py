@@ -1,6 +1,7 @@
 from functools import partial, reduce
 
 from executor.nodeDistinct import Distinct
+from executor.nodeFileScan import FileScan
 from executor.nodeIterator import Iterator
 from executor.nodeProjection import Projection
 from executor.nodeScan import Scan
@@ -23,6 +24,7 @@ def execute(representation):
     '''
     name_map = {
       "DISTINCT": Distinct,
+      "FILESCAN": FileScan,
       "PROJECTION": Projection,
       "SCAN": Scan,
       "SELECTION": Selection,
@@ -62,5 +64,10 @@ def execute(representation):
             master_generator.__close__()
             break
         values.append(_next)
+
+    # not needed really, just to see output:
+    for value in values:
+        print(value)
+
     return values
 

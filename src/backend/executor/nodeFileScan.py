@@ -25,10 +25,14 @@ class FileScan(Iterator):
             reader = csv.reader(_file, delimiter=',')
 
             for line_number in range(0, self.num_reads):
-                next(reader)
+                try:
+                    next(reader)
+                except StopIteration:
+                    return self.EOF
 
-            next_line = next(reader)
-            if next_line == self.END_OF_FILE:
+            try:
+                next_line = next(reader)
+            except StopIteration:
                 return self.EOF
 
             self.num_reads += 1
@@ -36,6 +40,11 @@ class FileScan(Iterator):
 
     def __close__(self):
         pass
+
+    def get_schema(self):
+        with open(self.file_name, 'r') as _file:
+            reader = csv.reader(_file, delimiter=',')
+            return next(reader)
 
 # lines manual implementation
 

@@ -42,6 +42,10 @@ class Selection(Iterator):
             in plan_string.split(',AND,')
         ]
 
+        # select * if no conditions
+        if conditions == [['']]:
+            return partial(lambda s, r: True, schema)
+
         # map condition tuples into Operator objects
         operators = []
         for condition in conditions:
