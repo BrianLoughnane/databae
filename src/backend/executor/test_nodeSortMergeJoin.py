@@ -1,44 +1,41 @@
-import csv
-import os
-import uuid
-
 from executor.nodeIterator import Iterator
-from executor.nodeFileScan import FileScan
+from executor.nodeSort import Sort
 
-class Sort(Iterator):
-    # B-1 pages worth of tuples data.
-    # I don't know what that number is, so I'm going to make it up as 1000 records
-    PARTITION_LIMIT = 1000
-
-    def __init__(self, _sort, _input):
+class SortMergeJoin(Iterator):
+    def __init__(self, _equality_predicate, _input1, _input2):
         '''
-        Pull in B-1 pages worth of tuples data, quick sort,
-        write out to a partition, repeat until EOF.
+        Takes 2 input streams and an equality predicate.
 
-        Instantiate FileScan nodes over the partitions.
+        The predicate parameters are (row_from_input1, row_from_input2)
 
-        A list holds the next values for each partion in memory
+        Idea is to return a join of the 2 streams if the
+        the predicate returns True.
+
+        __init__
+        - instantiates Sort nodes on each input.
+        - pulls the next row from each node into memory
+
+        __next__
+        - run equality predicate on the 2 in memory rows
+        - if passing
+          - return a joined tuple
+        - if failing
+          - throw away the smaller of the rows and replace
+            it with the next item of the respective sort node
+          - rerun equality predicate
         '''
-        self._input = _input
-        self._sort = _sort
 
-        # drain input stream, 1 partition at a time
-        partition_paths = []
-        scanners = []
-        while True:
-            eof, partition = self._get_sorted_partition()
-            partition_path = self._write_partition(partition)
-            partition_scanner = FileScan(partition_path)
-            partition_paths.append(partition_path)
-            scanners.append(partition_scanner)
-            if eof:
-                break
+    def __next__(self):
+        '''
+        '''
+        _next = self._get_next_from_buffer()
+        if _next is self.EOF:
+            self._input.__close__()
+        return _next
 
-        self.partition_paths = partition_paths
+    def __close__(self):
+        pass
 
-        self.buffers = {}
-        for scanner in scanners:
-            self.buffers[scanner] = scanner.__next__()
 
     def _get_next_from_buffer(self):
         '''
@@ -83,22 +80,6 @@ class Sort(Iterator):
                 break
             values.append(_next)
         return eof, sorted(values, key=self._sort)
-
-    def __next__(self):
-        '''
-        Returns the lowest of the in memory values.
-        '''
-        _next = self._get_next_from_buffer()
-        if _next is self.EOF:
-            self._input.__close__()
-        return _next
-
-    def __close__(self):
-        '''
-        delete all temporary files
-        '''
-        for path in self.partition_paths:
-            os.remove(path)
 
     @staticmethod
     def parse_args(schema, args):
