@@ -16,7 +16,7 @@ class Selection(Iterator):
         self._predicate = _predicate
 
     def _get_next(self):
-        _next = self._input.__next__()
+        _next = next(self._input)
 
         if _next == self.EOF:
             self._input.__close__()

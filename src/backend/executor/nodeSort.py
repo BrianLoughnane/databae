@@ -38,7 +38,7 @@ class Sort(Iterator):
 
         self.buffers = {}
         for scanner in scanners:
-            self.buffers[scanner] = scanner.__next__()
+            self.buffers[scanner] = next(scanner)
 
     def _get_next_from_buffer(self):
         '''
@@ -53,7 +53,7 @@ class Sort(Iterator):
         except IndexError:
             return self.EOF
         scanner, _next = scanner_tuple
-        self.buffers[scanner] = scanner.__next__()
+        self.buffers[scanner] = next(scanner)
         return _next
 
     def _write_partition(self, partition):
@@ -77,7 +77,7 @@ class Sort(Iterator):
         eof = False
         values = []
         for ii in range(0, self.PARTITION_LIMIT):
-            _next = self._input.__next__()
+            _next = next(self._input)
             if _next == self.EOF:
                 eof = True
                 break

@@ -9,7 +9,7 @@ class Projection(Iterator):
         self._projector = _projector
 
     def __next__(self):
-        _next = self._input.__next__()
+        _next = next(self._input)
 
         if _next == self.EOF:
           self._input.__close__()

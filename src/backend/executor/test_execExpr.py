@@ -3,6 +3,7 @@ import unittest
 from executor.execExpr import execute
 
 FILE_PATH = 'test_files/sample_movies.csv'
+FULL_FILE_PATH = 'test_files/ml-20m/movies.csv'
 
 class TestExecute(unittest.TestCase):
     def setUp(self):
@@ -194,7 +195,6 @@ class TestExecute(unittest.TestCase):
         self.assertEquals(result, expected)
 
     def test_filescan_sort(self):
-        FILE_PATH = 'test_files/ml-20m/movies.csv'
         result = execute([
             ["DISTINCT", [""]],
             ["SORT", ["genres", "title"]],

@@ -9,7 +9,7 @@ class Scan(Iterator):
 
     def __next__(self):
         try:
-            return self._input.__next__()
+            return next(self._input)
         except StopIteration:
             return self.EOF
 
@@ -17,5 +17,5 @@ class Scan(Iterator):
         pass
 
     def get_schema(self):
-        return self.__next__()
+        return next(self)
 

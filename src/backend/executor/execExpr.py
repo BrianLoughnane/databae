@@ -59,7 +59,7 @@ def execute(representation):
 
     values = []
     while True:
-        _next = master_generator.__next__()
+        _next = next(master_generator)
         if _next == Iterator.EOF:
             master_generator.__close__()
             break

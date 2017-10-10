@@ -7,7 +7,7 @@ class Distinct(Iterator):
         self._last = None
 
     def __next__(self):
-        _next = self._input.__next__()
+        _next = next(self._input)
 
         if _next == self.EOF:
             self._input.__close__()
@@ -17,7 +17,7 @@ class Distinct(Iterator):
             self._last = _next
             return _next
 
-        return self.__next__()
+        return next(self)
 
     def __close__(self):
         pass
