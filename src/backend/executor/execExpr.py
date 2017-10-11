@@ -8,6 +8,8 @@ from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
 from executor.nodeSort import Sort
 
+PRINT = False
+
 def execute(representation):
     '''
     Given a high-level representation of a single table
@@ -41,8 +43,7 @@ def execute(representation):
     leaf_args = leaf_representation[1]
     leaf_class = name_map.get(leaf_name)
     leaf_node = leaf_class(leaf_args[0])
-
-    schema = leaf_node.get_schema()
+    schema = next(leaf_node)
 
     pipeline = []
     for node_name, args in representation:
@@ -66,8 +67,9 @@ def execute(representation):
         values.append(_next)
 
     # not needed really, just to see output:
-    for value in values:
-        print(value)
+    if PRINT:
+        for value in values:
+            print(value)
 
     return values
 

@@ -16,6 +16,3 @@ class Scan(Iterator):
     def __close__(self):
         pass
 
-    def get_schema(self):
-        return next(self)
-

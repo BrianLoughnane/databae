@@ -15,18 +15,19 @@ class TestScan(unittest.TestCase):
 
     def test_next(self):
         instance = Scan(self._input)
+
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._list[0]
         )
 
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._list[1]
         )
 
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           instance.EOF
         )
 

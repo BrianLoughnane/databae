@@ -17,7 +17,7 @@ class TestIterator(unittest.TestCase):
 
         instance = Subclass()
         with self.assertRaises(ValueError):
-            instance.__next__()
+            next(instance)
 
     def test_close(self):
         class Subclass(Iterator):

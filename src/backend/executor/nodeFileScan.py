@@ -29,8 +29,6 @@ class FileScan(Iterator):
     def __close__(self):
         self.__del__()
 
-    def get_schema(self):
-        return next(self.reader)
 
 # lines manual implementation
 

@@ -35,29 +35,25 @@ class TestProjection(unittest.TestCase):
         instance = Projection(self._projector, self._input)
 
         self.assertEquals(
-          instance.__next__(),
-          [
-            self._data[0][1],
-          ]
+          next(instance),
+          ['name']
         )
 
         self.assertEquals(
-          instance.__next__(),
-          [
-            self._data[1][1],
-          ]
+          next(instance),
+          ['Brian']
         )
 
-        instance.__next__() # 2
-        instance.__next__() # 3
-        instance.__next__() # 4
-        instance.__next__() # 5
-        instance.__next__() # 6
-        instance.__next__() # 7
+        next(instance) # 2
+        next(instance) # 3
+        next(instance) # 4
+        next(instance) # 5
+        next(instance) # 6
+        next(instance) # 7
 
         self.assertFalse(scan_close_method.called)
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           instance.EOF
         )
         self.assertTrue(scan_close_method.called)

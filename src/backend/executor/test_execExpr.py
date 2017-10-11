@@ -109,7 +109,10 @@ class TestExecute(unittest.TestCase):
         result = execute([
             ["SORT", ["age"]],
             ["PROJECTION", ["age"]],
-            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SELECTION", [
+              "age", "EQUALS", "33",
+              "AND",
+              "major", "EQUALS", "econ"]],
             ["SCAN", [(ii for ii in self._data)]],
         ])
         expected = [

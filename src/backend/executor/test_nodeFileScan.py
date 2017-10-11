@@ -22,31 +22,32 @@ class TestFileScan(unittest.TestCase):
 
     def test_next(self):
         instance = FileScan(self._input)
+
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._list[0]
         )
 
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._list[1]
         )
 
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._list[2]
         )
-        instance.__next__() # 3
-        instance.__next__() # 4
-        instance.__next__() # 5
-        instance.__next__() # 6
-        instance.__next__() # 7
-        instance.__next__() # 8
-        instance.__next__() # 9
-        instance.__next__() # 10
+        next(instance) # 3
+        next(instance) # 4
+        next(instance) # 5
+        next(instance) # 6
+        next(instance) # 7
+        next(instance) # 8
+        next(instance) # 9
+        next(instance) # 10
 
         self.assertEquals(
-          instance.__next__(),
+          next(instance),
           self._with_comma
         )
 

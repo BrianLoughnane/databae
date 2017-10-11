@@ -35,19 +35,19 @@ class TestSelection(unittest.TestCase):
         instance = Selection(self._predicate, self._input)
 
         self.assertEquals(
-            instance.__next__(),
+            next(instance),
             self._data[2]
         )
 
         self.assertEquals(
-            instance.__next__(),
+            next(instance),
             self._data[5]
         )
 
         self.assertFalse(scan_close_method.called)
 
         self.assertEquals(
-            instance.__next__(),
+            next(instance),
             instance.EOF
         )
 
