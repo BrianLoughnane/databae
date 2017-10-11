@@ -9,8 +9,8 @@ class SortMergeJoin(Iterator):
         self._input1 = _input1
         self._input2 = _input2
         self.theta = theta
-        self._iterable = self.func()
 
+        # self._iterable = self.func()
         self.buffers = {
             self._input1: next(self._input1),
             self._input2: next(self._input2),
