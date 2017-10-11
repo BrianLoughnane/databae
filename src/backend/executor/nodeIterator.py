@@ -10,6 +10,9 @@ class Iterator():
     def __close__(self):
         raise ValueError('Not Implemented')
 
+    def __iter__(self):
+        return self
+
     @staticmethod
     def parse_args(schema, args):
         '''
