@@ -2,10 +2,8 @@ import csv
 
 from executor.nodeIterator import Iterator
 
-# lines implementation - automatic (python handles IO)
-
 class FileScan(Iterator):
-    # python returns empty string for end of file
+    # csv.reader returns empty string for end of file
     END_OF_FILE = ''
 
     def __init__(self, filename):
@@ -13,10 +11,6 @@ class FileScan(Iterator):
         self.reset()
 
     def __next__(self):
-        '''
-        The magical python will only go to disc if the next
-        line is not already in the buffer pool.
-        '''
         try:
             next_line = next(self._iterator)
         except StopIteration:
