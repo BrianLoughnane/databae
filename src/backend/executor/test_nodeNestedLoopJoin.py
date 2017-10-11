@@ -2,6 +2,10 @@ import unittest
 
 from executor.nodeNestedLoopJoin import NestedLoopJoin
 from executor.nodeScan import Scan
+from executor.nodeFileScan import FileScan
+
+SAMPLE_MOVIES = 'test_files/sample_movies.csv'
+SAMPLE_RATINGS = 'test_files/sample_ratings.csv'
 
 class TestNestedLoopJoin(unittest.TestCase):
     def setUp(self):
@@ -61,6 +65,7 @@ class TestNestedLoopJoin(unittest.TestCase):
         # pop off headers
         next(self._input1)
         next(self._input2)
+
         # all cases (checks for proper EOF handling)
         instance = NestedLoopJoin(
             self.theta, self._input1, self._input2)
@@ -70,4 +75,23 @@ class TestNestedLoopJoin(unittest.TestCase):
                 next(instance),
                 expected,
             )
+
+    def test__filescan(self):
+        self._input1 = FileScan(SAMPLE_MOVIES)
+        self._input2 = FileScan(SAMPLE_RATINGS)
+        self.theta = lambda _row1, _row2: _row1[0] == _row2[1]
+
+        # pop off headers
+        next(self._input1)
+        next(self._input2)
+
+        instance = NestedLoopJoin(
+            self.theta, self._input1, self._input2)
+        result = next(instance)
+        expected = [
+            '2', 'Jumanji (1995)',
+                'Adventure|Children|Fantasy',
+            '1', '2', '3.5', '1112486027'
+        ]
+        self.assertEquals(result, expected)
 

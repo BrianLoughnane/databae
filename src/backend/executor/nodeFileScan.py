@@ -8,8 +8,8 @@ class FileScan(Iterator):
     # python returns empty string for end of file
     END_OF_FILE = ''
 
-    def __init__(self, file_name):
-        self._file = open(file_name, 'r')
+    def __init__(self, filename):
+        self.filename = filename
         self.reset()
 
     def __next__(self):
@@ -27,8 +27,9 @@ class FileScan(Iterator):
         self._file.close()
 
     def reset(self):
+        file_connection = open(self.filename, 'r')
         self._iterator = csv.reader(
-          self._file, delimiter=',')
+          file_connection, delimiter=',')
 
 # lines manual implementation
 
