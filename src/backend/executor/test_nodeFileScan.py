@@ -15,11 +15,6 @@ class TestFileScan(unittest.TestCase):
         self._input = FILE_PATH
         self._with_comma = ['11', 'American President, The (1995)','Comedy|Drama|Romance']
 
-    def test_init(self):
-        instance = FileScan(self._input)
-        self.assertTrue(instance._file)
-        self.assertTrue(instance._iterator)
-
     def test_next(self):
         instance = FileScan(self._input)
 
