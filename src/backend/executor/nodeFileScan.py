@@ -10,7 +10,7 @@ class FileScan(Iterator):
 
     def __init__(self, file_name):
         self._file = open(file_name, 'r')
-        self.reader = csv.reader(self._file, delimiter=',')
+        self.reset()
 
     def __next__(self):
         '''
@@ -18,17 +18,17 @@ class FileScan(Iterator):
         line is not already in the buffer pool.
         '''
         try:
-            next_line = next(self.reader)
+            next_line = next(self._iterator)
         except StopIteration:
             return self.EOF
         return next_line
 
-    def __del__(self):
+    def __close__(self):
         self._file.close()
 
-    def __close__(self):
-        self.__del__()
-
+    def reset(self):
+        self._iterator = csv.reader(
+          self._file, delimiter=',')
 
 # lines manual implementation
 
