@@ -1,3 +1,5 @@
+from itertools import starmap
+
 from executor.nodeIterator import Iterator
 from executor.nodeSort import Sort
 
@@ -25,6 +27,12 @@ class SortMergeJoin(Iterator):
             self._input2: self.projection2,
         }
 
+        # pop off headers
+        #TODO - handle this elsewhere
+        next(self._input1)
+        next(self._input2)
+
+
         self.buffers = {
             self._input1: next(self._input1),
             self._input2: next(self._input2),
@@ -47,15 +55,14 @@ class SortMergeJoin(Iterator):
         ))
 
         projected_input_record_pairs = \
-          map(
-            lambda _input, record: \
-              self.projectors[_input](record),
+          list(starmap(lambda _input, record:
+              (_input, self.projectors[_input](record)),
             filtered_input_record_pairs,
-          )
+          ))
 
         sorted_items = sorted(
           projected_input_record_pairs,
-          key=lambda input__record: input__record[1]
+          key=lambda input__record: input__record[1],
         )
 
         try:
@@ -63,7 +70,7 @@ class SortMergeJoin(Iterator):
         except IndexError:
             return None
 
-        min_input, min_value = min_pair
+        min_input, _  = min_pair
         self.buffers[min_input] = next(min_input)
 
     def get_next_from_buffer(self, _input):
@@ -92,6 +99,9 @@ class SortMergeJoin(Iterator):
 
             # if condition not passing, pop off lowest
             if not self.theta(record1, record2):
+                print('%s does not match %s' % (
+                    record1, record2
+                ))
                 self.pop_lowest_buffer()
                 continue
 
@@ -100,8 +110,6 @@ class SortMergeJoin(Iterator):
 
             # build up records from both inputs that are
             # of the same sort key
-            print(record1)
-            import ipdb; ipdb.set_trace();
             while True:
                 nested_first_records.append(record1)
                 sort_key1 = self.projection1(record1)

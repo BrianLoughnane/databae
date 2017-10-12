@@ -15,14 +15,17 @@ class FileScan(Iterator):
             next_line = next(self._iterator)
         except StopIteration:
             return self.EOF
+
         return next_line
 
     def __close__(self):
         self.file_connection.close()
 
     def reset(self):
+
         self.file_connection = open(
           self.filename, 'r')
+
         self._iterator = csv.reader(
           self.file_connection, delimiter=',')
 
