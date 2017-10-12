@@ -5,6 +5,7 @@ class SortMergeJoin(Iterator):
     def __init__(
         self,
         theta,
+        projection1, projection2,
         _input1, _input2,
     ):
         '''
@@ -16,13 +17,20 @@ class SortMergeJoin(Iterator):
         self._input1 = _input1
         self._input2 = _input2
 
+        self.projection1 = projection1
+        self.projection2 = projection2
+
+        self.projectors = {
+            self._input1: self.projection1,
+            self._input2: self.projection2,
+        }
+
         self.buffers = {
             self._input1: next(self._input1),
             self._input2: next(self._input2),
         }
 
         self._iterable = self.get_iterable()
-
 
     def pop_lowest_buffer(self):
         '''
@@ -38,12 +46,15 @@ class SortMergeJoin(Iterator):
             input_record_pairs
         ))
 
-        # sort pairs by value (record)
-        # TODO the value needs to be projected
-        # to the join column, otherwise we don't know
-        # which column to sort on
+        projected_input_record_pairs = \
+          map(
+            lambda _input, record: \
+              self.projectors[_input](record),
+            filtered_input_record_pairs,
+          )
+
         sorted_items = sorted(
-          filtered_input_record_pairs,
+          projected_input_record_pairs,
           key=lambda input__record: input__record[1]
         )
 
@@ -53,53 +64,92 @@ class SortMergeJoin(Iterator):
             return None
 
         min_input, min_value = min_pair
-
         self.buffers[min_input] = next(min_input)
 
+    def get_next_from_buffer(self, _input):
+      _next = next(_input)
+      self.buffers[_input] = _next
+      return _next
+
+    def buffer_has_values(self):
+        return bool(list(filter(
+          lambda v: v is not self.EOF,
+          self.buffers.values()
+        )))
+
     def get_iterable(self):
-        if not self.buffers:
+        if not self.buffer_has_values():
             yield self.EOF
 
-        record1 = self.buffers.get(self._input1, None)
-        record2 = self.buffers.get(self._input2, None)
+        record1 = self.buffers.get(self._input1)
+        record2 = self.buffers.get(self._input2)
 
         while True:
-            if not self.buffers:
+            if not self.buffer_has_values():
+                if self.theta(record1, record2):
+                    yield record1 + record2
                 break
 
+            # if condition not passing, pop off lowest
             if not self.theta(record1, record2):
                 self.pop_lowest_buffer()
                 continue
 
-            nested_first_records = [record1]
-            nested_second_records = [record2]
+            nested_first_records = []
+            nested_second_records = []
 
-            # build up repeated records from both inputs
+            # build up records from both inputs that are
+            # of the same sort key
+            print(record1)
+            import ipdb; ipdb.set_trace();
             while True:
-                record1 = next(self._input1)
-                # TODO == is wrong.  equality is
-                # determined by join column
-                if record1 == nested_first_records[0]:
-                    nested_first_records.append(record1)
+                nested_first_records.append(record1)
+                sort_key1 = self.projection1(record1)
+
+                # reassign record1 variable to next
+                record1 = self.get_next_from_buffer(
+                  self._input1,
+                )
+                if record1 == self.EOF:
+                    break
+
+                # if new record1 has the same sort key, append it + repeat
+                if self.projection1(record1) == sort_key1:
+                    continue
                 else:
                     break
 
             while True:
-                record2 = next(self._input2)
-                # TODO == is wrong.  equality is
-                # determined by join column
-                if record2 == nested_first_records[0]:
-                    nested_first_records.append(record2)
+                nested_second_records.append(record2)
+                sort_key2 = self.projection2(record2)
+
+                # reassign record2 variable to next
+                record2 = self.get_next_from_buffer(
+                  self._input2,
+                )
+                if record2 == self.EOF:
+                    break
+
+                # if new record2 has the same sort key, append it + repeat
+                if self.projection2(record2) == sort_key2:
+                    continue
                 else:
                     break
 
             # nested loops over duplicate records
             for nested_record1 in nested_first_records:
                 for nested_record2 in nested_second_records:
-                    yield nested_record1 + nested_record2
+                    if self.theta(
+                        nested_record1,
+                        nested_record2,
+                    ):
+                        yield nested_record1 + nested_record2
 
     def __next__(self):
-        return next(self._iterable)
+        try:
+          return next(self._iterable)
+        except StopIteration:
+          return self.EOF
 
     def __close__(self):
         pass
