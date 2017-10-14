@@ -70,7 +70,11 @@ class TestExecute(unittest.TestCase):
     def test_selection__projection(self):
         result = parse_and_execute([
             ["PROJECTION", ["name"]],
-            ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
+            ["SELECTION", [
+                "age", "EQUALS", "33",
+                "AND",
+                "major", "EQUALS", "econ"
+            ]],
             ["SCAN", self._data],
         ])
         expected = [
@@ -84,7 +88,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["name"]],
             ["PROJECTION", ["name"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["Carolyn"],
@@ -96,7 +100,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["name"]],
             ["PROJECTION", ["id", "name"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["5", "Carolyn"],
@@ -108,7 +112,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["id"]],
             ["PROJECTION", ["id", "name"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["2", "Jason"],
@@ -120,7 +124,7 @@ class TestExecute(unittest.TestCase):
         result = parse_and_execute([
             ["PROJECTION", ["age"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["33"],
@@ -136,7 +140,7 @@ class TestExecute(unittest.TestCase):
               "age", "EQUALS", "33",
               "AND",
               "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["33"],
@@ -150,7 +154,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["age"]],
             ["PROJECTION", ["age"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["33"],
@@ -162,7 +166,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["major"]],
             ["PROJECTION", ["major"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["econ"],
@@ -174,7 +178,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["name"]],
             ["PROJECTION", ["name"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["Carolyn"],
@@ -187,7 +191,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["name"]],
             ["PROJECTION", ["name", "major"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["Carolyn", "econ"],
@@ -200,7 +204,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["name"]],
             ["PROJECTION", ["name", "major"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           ["Carolyn", "econ"],

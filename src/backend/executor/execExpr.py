@@ -33,10 +33,14 @@ def tree(pipeline):
         ],
     ]
 
+    # TODO - this is appending not only the children
+    inputs, but the grandchildren inputs as well.
     '''
     parent = pipeline[0]
     for children in pipeline[1:]:
+        # parent.inputs.append('foo')
         parent.inputs.append(tree(children))
+    import ipdb; ipdb.set_trace();
     return parent
 
 
@@ -59,13 +63,21 @@ def parse_and_execute(representation):
       ["FILESCAN", ["movies"]]
     ]
 
-    turns into
+    First, turn it into a "pipeline":
+
     [Projection(predicate),
         [Selection(theta),
             [FileScan(projection)],
         ],
     ]
+
+    Then a tree, with pointers to provider nodes
+    as "inputs" []
+
+    Finally, execute() creates a generator over the
+    topmost node in the tree
     '''
+
     name_map = {
       "DISTINCT": Distinct,
       "FILESCAN": FileScan,
@@ -77,10 +89,11 @@ def parse_and_execute(representation):
 
     if not representation:
         return None
+    representation.reverse()
 
     # create a leaf node for no other reason than
     # to get the schema
-    leaf_representation = representation[-1]
+    leaf_representation = representation[0]
     leaf_name = leaf_representation[0]
     leaf_args = leaf_representation[1]
     leaf_class = name_map.get(leaf_name)
@@ -88,19 +101,48 @@ def parse_and_execute(representation):
     schema = next(leaf_node)
     leaf_node.__close__()
 
-    # build up pipeline
-    original_pipeline = [[]]
-    pipeline = original_pipeline[0]
+    # build up pipeline...
+
+    # get classes
+
+    node_classes = [
+      name_map.get(node_name)
+      for node_name, args in representation
+    ]
+
+    # get the state of the schema for each node
+
+    parsed_schema = []
+    counter = -1
     for node_name, args in representation:
-        pipeline.append([])
-        pipeline = pipeline[-1]
+      counter += 1
+      node_class = node_classes[counter]
+      schema = node_class.parse_schema(list(schema), args)
+      parsed_schema.append(schema)
 
-        node_class = name_map.get(node_name)
-        parsed_args = node_class.parse_args(list(schema), args)
-        schema = node_class.parse_schema(list(schema), args)
-        pipeline.append(node_class(parsed_args))
+    # determine the arguments passed to instantiate
+    # the nodes, based on the schema state
 
-    pipeline = original_pipeline[0][0]
+    parsed_args = []
+    counter = -1
+    for node_name, args in representation:
+      counter += 1
+      node_class = node_classes[counter]
+      schema = parsed_schema[counter]
+      args = node_class.parse_args(list(schema), args)
+      parsed_args.append(args)
+
+    # build up a pipeline of instantiated nodes
+
+    pipeline = []
+    counter = -1
+    for node_name, args in representation:
+        counter += 1
+        node_class = node_classes[counter]
+        node_args = parsed_args[counter]
+        node_instance = node_class(node_args)
+        pipeline = [node_instance, pipeline] \
+            if pipeline else [node_instance]
 
     values = list(execute(tree(pipeline)))
 
