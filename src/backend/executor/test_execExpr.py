@@ -7,6 +7,7 @@ from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
 from executor.nodeProjection import Projection
 from executor.nodeNestedLoopJoin import NestedLoopJoin
+from executor.nodeHashJoin import HashJoin
 
 FILE_PATH = 'test_files/sample_movies.csv'
 FULL_FILE_PATH = 'test_files/ml-20m/movies.csv'
@@ -38,17 +39,6 @@ class TestExecute(unittest.TestCase):
           (1, 'eng', 4),
           (6, 'law', 5),
         ]
-
-        self.expected_joins = [
-          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
-          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
-          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
-          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
-          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
-          ('6', 'Michael', '65', 'law', 6, 'law', 5),
-          ('7', 'Lori', '62', 'business', 7, 'business', 4)
-        ]
-
 
     def test_tree__one(self):
         scan_node = Scan(self._data)
@@ -312,21 +302,45 @@ class TestExecute(unittest.TestCase):
         # self.assertEquals(result, expected)
 
     def test_nested_loop_join(self):
-        students = Scan(self._data)
-        majors = Scan(self.majors_gpa)
-
-        # pop off headers
-        next(students)
-        next(majors)
-
+        expected_joins = [
+          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
+          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
+          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
+          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
+          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
+          ('6', 'Michael', '65', 'law', 6, 'law', 5),
+          ('7', 'Lori', '62', 'business', 7, 'business', 4)
+        ]
 
         theta = lambda _row1, _row2: _row1[3] == _row2[1]
 
         result = list(execute(tree(
             [NestedLoopJoin(theta),
-                [students],
-                [majors],
+                [Scan(self._data, pop_headers=True)],
+                [Scan(self.majors_gpa, pop_headers=True)],
             ])))
 
-        self.assertEquals(result, self.expected_joins)
+        self.assertEquals(result, expected_joins)
+
+    def test_hash_join(self):
+        expected_joins = [
+          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
+          ('7', 'Lori', '62', 'business', 7, 'business', 4),
+          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
+          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
+          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
+          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
+          ('6', 'Michael', '65', 'law', 6, 'law', 5),
+        ]
+
+        projection1 = lambda r: r[3]
+        projection2 = lambda r: r[1]
+
+        result = list(execute(tree(
+            [HashJoin(projection1, projection2),
+                [Scan(self._data, pop_headers=True)],
+                [Scan(self.majors_gpa, pop_headers=True)],
+            ])))
+
+        self.assertEquals(result, expected_joins)
 
