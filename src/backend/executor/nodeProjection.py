@@ -4,17 +4,16 @@ from executor.nodeIterator import Iterator
 from operators import operator_map
 
 class Projection(Iterator):
-    def __init__(self, _projector, _input):
-        self._input = _input
+    def __init__(self, _projector):
         self._projector = _projector
 
     def __next__(self):
-        _next = next(self._input)
+        _input = self.inputs[0]
 
+        _next = next(_input)
         if _next == self.EOF:
-          self._input.__close__()
+          _input.__close__()
           return self.EOF
-
         return(self._projector(_next))
 
     def __close__(self):

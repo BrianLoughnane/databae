@@ -25,14 +25,13 @@ class TestProjection(unittest.TestCase):
         sets pointer to child node
         sets pointer to predicate
         '''
-        instance = Projection(self._projector, self._input)
-
-        self.assertEquals(instance._input, self._input)
+        instance = Projection(self._projector)
         self.assertEquals(instance._projector, self._projector)
 
     @patch.object(Scan, '__close__')
     def test_next(self, scan_close_method):
-        instance = Projection(self._projector, self._input)
+        instance = Projection(self._projector)
+        instance.inputs = (self._input,)
 
         self.assertEquals(
           next(instance),
@@ -59,6 +58,6 @@ class TestProjection(unittest.TestCase):
         self.assertTrue(scan_close_method.called)
 
     def test_close(self):
-        instance = Projection(self._projector, self._input)
+        instance = Projection(self._projector)
         self.assertEquals(instance.__close__(), None)
 
