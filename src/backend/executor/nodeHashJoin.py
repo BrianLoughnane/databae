@@ -17,18 +17,12 @@ class HashJoin(Iterator):
     def __init__(
           self,
           get_input1_join_columns, get_input2_join_columns,
-          _input1, _input2,
     ):
         '''
         Assumes sorted input streams
         '''
         self.get_input1_join_columns = get_input1_join_columns
         self.get_input2_join_columns = get_input2_join_columns
-
-        self._input1 = _input1
-        self._input2 = _input2
-
-        self.initiate_hash_table()
 
         self._iterable = self.get_iterable()
 
@@ -41,12 +35,11 @@ class HashJoin(Iterator):
         Assumes first input is the smaller relation.
         '''
         self.hash_table = defaultdict(list)
-        for record1 in self._input1:
+        _input1 = self.inputs[0]
+        for record1 in _input1:
             if record1 == self.EOF:
                 break
-
             key = self.get_input1_join_columns(record1)
-
             self.hash_table[key].append(record1)
 
     def get_iterable(self):
@@ -55,7 +48,10 @@ class HashJoin(Iterator):
         columns in the hash table and producing matching tuples
         from the hash table.
         '''
-        for record2 in self._input2:
+        if not hasattr(self, 'hash_table'):
+            self.initiate_hash_table()
+
+        for record2 in self.inputs[1]:
             if record2 == self.EOF:
                 yield self.EOF
 

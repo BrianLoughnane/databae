@@ -1,13 +1,12 @@
 from executor.nodeIterator import Iterator
 
 class Distinct(Iterator):
-    def __init__(self, _keys, _input):
-        self._input = _input
+    def __init__(self, _keys):
         self._keys = _keys
         self._last = None
 
     def __next__(self):
-        _next = next(self._input)
+        _next = next(self.inputs[0])
 
         if _next == self.EOF:
             self._input.__close__()
