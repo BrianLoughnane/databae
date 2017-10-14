@@ -12,11 +12,12 @@ FILE_PATH = 'test_files/sample_movies.csv'
 FULL_FILE_PATH = 'test_files/ml-20m/movies.csv'
 
 class TestExecute(unittest.TestCase):
-  '''
-  to print out an input stream, add this above it:
-    ["PRINT", []],
-
-  '''
+    '''
+    to print out an input stream, add this above it:
+      ["PRINT", []],
+    to debub an input stream, add this above it:
+      ["DEBUG", []],
+    '''
     def setUp(self):
         self._data = [
           ('id', 'name', 'age', 'major'),
