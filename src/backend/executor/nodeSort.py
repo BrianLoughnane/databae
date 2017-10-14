@@ -10,7 +10,7 @@ class Sort(Iterator):
     # I don't know what that number is, so I'm going to make it up as 1000 records
     PARTITION_LIMIT = 1000
 
-    def __init__(self, _sort, _input):
+    def __init__(self, _sort):
         '''
         Pull in B-1 pages worth of tuples data, quick sort,
         write out to a partition, repeat until EOF.
@@ -19,10 +19,18 @@ class Sort(Iterator):
 
         A list holds the next values for each partion in memory
         '''
-        self._input = _input
         self._sort = _sort
+        self.initialized = False
 
-        # drain input stream, 1 partition at a time
+    def build_partitions_and_buffers(self):
+        '''
+        Retrieves input records into memory until a limit
+        is reached, then sorts the records and writes them
+        to a partion.
+
+        Repeats until input is empty, then pulls the next
+        from each partition into the "buffers" structure.
+        '''
         partition_paths = []
         scanners = []
         while True:
@@ -39,6 +47,8 @@ class Sort(Iterator):
         self.buffers = {}
         for scanner in scanners:
             self.buffers[scanner] = next(scanner)
+
+        self.initialized = True
 
     def _get_next_from_buffer(self):
         '''
@@ -74,10 +84,11 @@ class Sort(Iterator):
         Returns a tuple with the sorted values, as well as a flag
         indicating if the EOF was reached.
         '''
+        _input = self.inputs[0]
         eof = False
         values = []
         for ii in range(0, self.PARTITION_LIMIT):
-            _next = next(self._input)
+            _next = next(_input)
             if _next == self.EOF:
                 eof = True
                 break
@@ -88,9 +99,14 @@ class Sort(Iterator):
         '''
         Returns the lowest of the in memory values.
         '''
+        _input = self.inputs[0]
+        if not self.initialized:
+            self.build_partitions_and_buffers()
+
         _next = self._get_next_from_buffer()
         if _next is self.EOF:
-            self._input.__close__()
+            _input.__close__()
+
         return _next
 
     def __close__(self):
