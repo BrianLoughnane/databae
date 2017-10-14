@@ -8,7 +8,8 @@ class Iterator():
         raise ValueError('Not Implemented')
 
     def __close__(self):
-        raise ValueError('Not Implemented')
+        for _input in self._inputs:
+            _input.__close__()
 
     def __iter__(self):
         return self

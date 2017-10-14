@@ -5,6 +5,7 @@ class Scan(Iterator):
     Wraps a generator to return EOF when it's complete
     '''
     def __init__(self, values):
+        super().__init__()
         self.values = values
         self.reset()
 

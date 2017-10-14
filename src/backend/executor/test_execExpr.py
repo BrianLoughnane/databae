@@ -12,6 +12,11 @@ FILE_PATH = 'test_files/sample_movies.csv'
 FULL_FILE_PATH = 'test_files/ml-20m/movies.csv'
 
 class TestExecute(unittest.TestCase):
+  '''
+  to print out an input stream, add this above it:
+    ["PRINT", []],
+
+  '''
     def setUp(self):
         self._data = [
           ('id', 'name', 'age', 'major'),
@@ -284,7 +289,7 @@ class TestExecute(unittest.TestCase):
             ["DISTINCT", [""]],
             ["PROJECTION", ["movieId", "title"]],
             ["SELECTION", ["movieId", "EQUALS", "33"]],
-            ["FILESCAN", [FILE_PATH]],
+            ["FILESCAN", FILE_PATH],
         ])
         expected = [
           ['33', 'Wings of Courage (1995)'],
@@ -297,7 +302,7 @@ class TestExecute(unittest.TestCase):
             ["SORT", ["genres", "title"]],
             ["PROJECTION", ["movieId", "title", "genres"]],
             ["SELECTION", []],
-            ["FILESCAN", [FILE_PATH]],
+            ["FILESCAN", FILE_PATH],
         ])
         # TODO implement Limit, then come back to this
         # expected = [

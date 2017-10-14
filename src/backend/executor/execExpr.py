@@ -8,6 +8,16 @@ from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
 from executor.nodeSort import Sort
 
+class Print(Iterator):
+    def __init__(self, null):
+        super().__init__()
+
+    def __next__(self):
+        _input = self._inputs[0]
+        _next = next(_input)
+        print(str(_input), _next)
+        return _next
+
 PRINT = False
 
 def tree(pipeline):
@@ -80,6 +90,8 @@ def parse_and_execute(representation):
       "SCAN": Scan,
       "SELECTION": Selection,
       "SORT": Sort,
+      # for debugging
+      "PRINT": Print,
     }
 
     if not representation:
@@ -107,7 +119,7 @@ def parse_and_execute(representation):
 
     # get the state of the schema for each node
 
-    parsed_schema = []
+    parsed_schema = [schema]
     counter = -1
     for node_name, args in representation:
       counter += 1

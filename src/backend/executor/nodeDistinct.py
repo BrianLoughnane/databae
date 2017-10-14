@@ -7,10 +7,11 @@ class Distinct(Iterator):
         self._last = None
 
     def __next__(self):
-        _next = next(self._inputs[0])
+        _input = self._inputs[0]
+        _next = next(_input)
 
         if _next == self.EOF:
-            self._input.__close__()
+            _input.__close__()
             return self.EOF
 
         if _next != self._last:
