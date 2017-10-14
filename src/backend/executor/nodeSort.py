@@ -91,7 +91,6 @@ class Sort(Iterator):
         _next = self._get_next_from_buffer()
         if _next is self.EOF:
             self._input.__close__()
-        print(_next)
         return _next
 
     def __close__(self):

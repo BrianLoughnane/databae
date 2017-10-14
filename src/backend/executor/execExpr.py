@@ -10,7 +10,35 @@ from executor.nodeSort import Sort
 
 PRINT = False
 
-def execute(representation):
+def tree(pipeline):
+    '''
+    Takes a nested list of parent-children tuples of instantiated
+    nodes and links them together.
+
+    [
+        Projection(predicate), [
+            NestedLoopJoin(theta), [
+                Scan(relationA),
+                Scan(relationB),
+            ]
+        ]
+    ]
+
+    '''
+    return reduce(
+        lambda accum, next_item: next_item(accum),
+        pipeline,
+    )
+
+
+def execute(tree):
+    for _next in tree:
+        if _next == Iterator.EOF:
+            tree.__close__()
+            break
+        yield _next
+
+def parse_and_execute(representation):
     '''
     Given a high-level representation of a single table
     query, be able to execute it and return the result.
@@ -21,6 +49,15 @@ def execute(representation):
       ["SELECTION", ["id", "EQUALS", "5000"]],
       ["FILESCAN", ["movies"]]
     ]
+
+    [
+      ["FILESCAN", ["ratings"]]
+      ["JOIN", ["id", "EQUALS", "movieId"]]
+      ["FILESCAN", ["movies"]]
+    ]
+
+
+    For a join:
 
     With an output of (5000, "Medium Cool (1969)")`
     '''
@@ -35,14 +72,18 @@ def execute(representation):
 
     if not representation:
         return None
-
     representation.reverse()
 
+    # create a leaf node for no other reason than
+    # to get the schema
     leaf_representation = representation.pop(0)
     leaf_name = leaf_representation[0]
     leaf_args = leaf_representation[1]
+
     leaf_class = name_map.get(leaf_name)
     leaf_node = leaf_class(leaf_args[0])
+
+    # get schema and close
     schema = next(leaf_node)
 
     pipeline = []
@@ -50,21 +91,9 @@ def execute(representation):
         node_class = name_map.get(node_name)
         parsed_args = node_class.parse_args(list(schema), args)
         schema = node_class.parse_schema(list(schema), args)
-        pipeline.append(partial(node_class, parsed_args))
+        pipeline.append(node_class(parsed_args))
 
-    master_generator = reduce(
-        lambda accum, next_item: next_item(accum),
-        pipeline,
-        leaf_node
-    )
-
-    values = []
-    while True:
-        _next = next(master_generator)
-        if _next == Iterator.EOF:
-            master_generator.__close__()
-            break
-        values.append(_next)
+    values = list(execute(tree(pipeline)))
 
     # not needed really, just to see output:
     if PRINT:
