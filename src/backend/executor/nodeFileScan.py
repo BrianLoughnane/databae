@@ -16,7 +16,7 @@ class FileScan(Iterator):
         except StopIteration:
             return self.EOF
 
-        return next_line
+        return tuple(next_line)
 
     def __close__(self):
         self.file_connection.close()

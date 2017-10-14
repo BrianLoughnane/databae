@@ -57,14 +57,18 @@ class Sort(Iterator):
         the next value of the input that it came from.
         '''
         items = list(self.buffers.items())
-        filtered_items = list(filter(lambda t: t[1] != self.EOF, items))
-        sorted_items = sorted(filtered_items, key=lambda item: self._sort(item[1]))
+        filtered_items = list(
+            filter(lambda t: t[1] != self.EOF, items))
+        sorted_items = sorted(
+            filtered_items, key=lambda item: self._sort(item[1]))
+
         try:
             scanner_tuple = sorted_items.pop(0)
         except IndexError:
             return self.EOF
         scanner, _next = scanner_tuple
         self.buffers[scanner] = next(scanner)
+
         return _next
 
     def _write_partition(self, partition):

@@ -10,6 +10,7 @@ class SortMergeJoin(Iterator):
         projection1, projection2):
         '''
         SortMergeJoin can only join on a single condition.
+
         Assumes sorted input streams.
         '''
         super().__init__()
@@ -25,11 +26,6 @@ class SortMergeJoin(Iterator):
         self._input1 = self._inputs[0]
         self._input2 = self._inputs[1]
 
-        # pop off headers
-        #TODO - handle this elsewhere
-        next(self._input1)
-        next(self._input2)
-
         self.projectors = {
             self._input1: self.projection1,
             self._input2: self.projection2,
@@ -41,7 +37,6 @@ class SortMergeJoin(Iterator):
         }
 
         self._iterable = self.get_iterable()
-
         self.initialized = True
 
     def pop_lowest_buffer(self):
@@ -64,13 +59,13 @@ class SortMergeJoin(Iterator):
             filtered_input_record_pairs,
           ))
 
-        sorted_items = sorted(
+        sorted_input_record_pairs = sorted(
           projected_input_record_pairs,
           key=lambda input__record: input__record[1],
         )
 
         try:
-            min_pair = sorted_items.pop(0)
+            min_pair = sorted_input_record_pairs.pop(0)
         except IndexError:
             return None
 

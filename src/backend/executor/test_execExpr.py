@@ -3,11 +3,17 @@ import unittest
 from executor.execExpr import (
     execute, parse_and_execute, tree
 )
+from executor.helpers import (
+    Debug, Print
+)
+
 from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
+from executor.nodeSort import Sort
 from executor.nodeProjection import Projection
 from executor.nodeNestedLoopJoin import NestedLoopJoin
 from executor.nodeHashJoin import HashJoin
+from executor.nodeSortMergeJoin import SortMergeJoin
 
 FILE_PATH = 'test_files/sample_movies.csv'
 FULL_FILE_PATH = 'test_files/ml-20m/movies.csv'
@@ -32,12 +38,12 @@ class TestExecute(unittest.TestCase):
         ]
         self.majors_gpa = [
           ('id', 'major', 'gpa'),
-          (3, 'accounting', 3),
-          (7, 'business', 4),
-          (2, 'econ', 2),
-          (4, 'edu', 4.5),
-          (1, 'eng', 4),
-          (6, 'law', 5),
+          ('3', 'accounting', '3'),
+          ('7', 'business', '4'),
+          ('2', 'econ', '2'),
+          ('4', 'edu', '4.5'),
+          ('1', 'eng', '4'),
+          ('6', 'law', '5'),
         ]
 
     def test_tree__one(self):
@@ -154,8 +160,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["Carolyn"],
-          ["Jason"],
+          ("Carolyn",),
+          ("Jason",),
         ]
         self.assertEquals(result, expected)
 
@@ -166,8 +172,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["5", "Carolyn"],
-          ["2", "Jason"],
+          ("5", "Carolyn",),
+          ("2", "Jason",),
         ]
         self.assertEquals(result, expected)
 
@@ -178,8 +184,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["2", "Jason"],
-          ["5", "Carolyn"],
+          ("2", "Jason",),
+          ("5", "Carolyn",),
         ]
         self.assertEquals(result, expected)
 
@@ -206,8 +212,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["33"],
-          ["33"],
+          ("33",),
+          ("33",),
         ]
         self.assertEquals(result, expected)
 
@@ -220,7 +226,7 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["33"],
+          ("33",),
         ]
         self.assertEquals(result, expected)
 
@@ -232,7 +238,7 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["econ"],
+          ("econ",),
         ]
         self.assertEquals(result, expected)
 
@@ -244,8 +250,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["Carolyn"],
-          ["Jason"],
+          ("Carolyn",),
+          ("Jason",),
         ]
         self.assertEquals(result, expected)
 
@@ -257,8 +263,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["Carolyn", "econ"],
-          ["Jason", "econ"],
+          ("Carolyn", "econ",),
+          ("Jason", "econ",),
         ]
         self.assertEquals(result, expected)
 
@@ -270,8 +276,8 @@ class TestExecute(unittest.TestCase):
             ["SCAN", self._data],
         ])
         expected = [
-          ["Carolyn", "econ"],
-          ["Jason", "econ"],
+          ("Carolyn", "econ",),
+          ("Jason", "econ",),
         ]
         self.assertEquals(result, expected)
 
@@ -303,13 +309,13 @@ class TestExecute(unittest.TestCase):
 
     def test_nested_loop_join(self):
         expected_joins = [
-          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
-          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
-          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
-          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
-          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
-          ('6', 'Michael', '65', 'law', 6, 'law', 5),
-          ('7', 'Lori', '62', 'business', 7, 'business', 4)
+          ('1', 'Brian', '30', 'eng', '1', 'eng', '4'),
+          ('2', 'Jason', '33', 'econ', '2', 'econ', '2'),
+          ('3', 'Christie', '28', 'accounting', '3', 'accounting', '3'),
+          ('4', 'Gayle', '33', 'edu', '4', 'edu', '4.5'),
+          ('5', 'Carolyn', '33', 'econ', '2', 'econ', '2'),
+          ('6', 'Michael', '65', 'law', '6', 'law', '5'),
+          ('7', 'Lori', '62', 'business', '7', 'business', '4')
         ]
 
         theta = lambda _row1, _row2: _row1[3] == _row2[1]
@@ -324,13 +330,13 @@ class TestExecute(unittest.TestCase):
 
     def test_hash_join(self):
         expected_joins = [
-          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
-          ('7', 'Lori', '62', 'business', 7, 'business', 4),
-          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
-          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
-          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
-          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
-          ('6', 'Michael', '65', 'law', 6, 'law', 5),
+          ('3', 'Christie', '28', 'accounting', '3', 'accounting', '3'),
+          ('7', 'Lori', '62', 'business', '7', 'business', '4'),
+          ('2', 'Jason', '33', 'econ', '2', 'econ', '2'),
+          ('5', 'Carolyn', '33', 'econ', '2', 'econ', '2'),
+          ('4', 'Gayle', '33', 'edu', '4', 'edu', '4.5'),
+          ('1', 'Brian', '30', 'eng', '1', 'eng', '4'),
+          ('6', 'Michael', '65', 'law', '6', 'law', '5'),
         ]
 
         projection1 = lambda r: r[3]
@@ -341,6 +347,32 @@ class TestExecute(unittest.TestCase):
                 [Scan(self._data, pop_headers=True)],
                 [Scan(self.majors_gpa, pop_headers=True)],
             ])))
+
+        self.assertEquals(result, expected_joins)
+
+    def test_sort_merge_join(self):
+        expected_joins = [
+          ('3', 'Christie', '28', 'accounting', '3', 'accounting', '3'),
+          ('7', 'Lori', '62', 'business', '7', 'business', '4'),
+          ('2', 'Jason', '33', 'econ', '2', 'econ', '2'),
+          ('5', 'Carolyn', '33', 'econ', '2', 'econ', '2'),
+          ('4', 'Gayle', '33', 'edu', '4', 'edu', '4.5'),
+          ('1', 'Brian', '30', 'eng', '1', 'eng', '4'),
+          ('6', 'Michael', '65', 'law', '6', 'law', '5'),
+        ]
+
+        theta = lambda _row1, _row2: _row1[3] == _row2[1]
+        projection1 = lambda r: r[3]
+        projection2 = lambda r: r[1]
+
+        result = list(execute(tree(
+            [SortMergeJoin(theta, projection1, projection2),
+                [Sort(projection1),
+                    [Scan(self._data, pop_headers=True)]],
+                [Sort(projection2),
+                    [Scan(self.majors_gpa, pop_headers=True)]],
+            ]
+        )))
 
         self.assertEquals(result, expected_joins)
 
