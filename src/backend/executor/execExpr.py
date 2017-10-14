@@ -18,9 +18,6 @@ def tree(pipeline):
     The first node of the list will take subsequent
     items as inputs
 
-    [
-        Selection(predicate), []
-
     [Projection(predicate),
         [NestedLoopJoin(theta),
             [Sort(projection),
@@ -38,7 +35,7 @@ def tree(pipeline):
 
     '''
     parent = pipeline[0]
-    for children in lst[1:]:
+    for children in pipeline[1:]:
         parent.inputs.append(tree(children))
     return parent
 
@@ -62,16 +59,12 @@ def parse_and_execute(representation):
       ["FILESCAN", ["movies"]]
     ]
 
-    [
-      ["FILESCAN", ["ratings"]]
-      ["JOIN", ["id", "EQUALS", "movieId"]]
-      ["FILESCAN", ["movies"]]
+    turns into
+    [Projection(predicate),
+        [Selection(theta),
+            [FileScan(projection)],
+        ],
     ]
-
-
-    For a join:
-
-    With an output of (5000, "Medium Cool (1969)")`
     '''
     name_map = {
       "DISTINCT": Distinct,
@@ -84,26 +77,30 @@ def parse_and_execute(representation):
 
     if not representation:
         return None
-    representation.reverse()
 
     # create a leaf node for no other reason than
     # to get the schema
-    leaf_representation = representation.pop(0)
+    leaf_representation = representation[-1]
     leaf_name = leaf_representation[0]
     leaf_args = leaf_representation[1]
-
     leaf_class = name_map.get(leaf_name)
-    leaf_node = leaf_class(leaf_args[0])
-
-    # get schema and close
+    leaf_node = leaf_class(leaf_args)
     schema = next(leaf_node)
+    leaf_node.__close__()
 
-    pipeline = []
+    # build up pipeline
+    original_pipeline = [[]]
+    pipeline = original_pipeline[0]
     for node_name, args in representation:
+        pipeline.append([])
+        pipeline = pipeline[-1]
+
         node_class = name_map.get(node_name)
         parsed_args = node_class.parse_args(list(schema), args)
         schema = node_class.parse_schema(list(schema), args)
         pipeline.append(node_class(parsed_args))
+
+    pipeline = original_pipeline[0][0]
 
     values = list(execute(tree(pipeline)))
 

@@ -49,7 +49,7 @@ class TestExecute(unittest.TestCase):
     def test_selection__equals(self):
         result = parse_and_execute([
             ["SELECTION", ["id", "EQUALS", "1"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           self._data[1],
@@ -59,7 +59,7 @@ class TestExecute(unittest.TestCase):
     def test_selection__equals__and(self):
         result = parse_and_execute([
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           self._data[2],
@@ -71,7 +71,7 @@ class TestExecute(unittest.TestCase):
         result = parse_and_execute([
             ["PROJECTION", ["name"]],
             ["SELECTION", ["age", "EQUALS", "33", "AND", "major", "EQUALS", "econ"]],
-            ["SCAN", [(ii for ii in self._data)]],
+            ["SCAN", self._data],
         ])
         expected = [
           [self._data[2][1]],
@@ -234,13 +234,13 @@ class TestExecute(unittest.TestCase):
         # ]
         # self.assertEquals(result, expected)
 
-    def test_nested_loop_join(self):
-        theta = lambda _row: _row[3] == _row[1]
-        result = execute(tree([
-            NestedLoopJoin(theta), [
-                Scan(self._data),
-                Scan(self.majors_gpa),
-            ]
-        ]))
-        self.assertEquals(result, self.expected_joins)
+    # def test_nested_loop_join(self):
+        # theta = lambda _row: _row[3] == _row[1]
+        # result = execute(tree([
+            # NestedLoopJoin(theta), [
+                # Scan(self._data),
+                # Scan(self.majors_gpa),
+            # ]
+        # ]))
+        # self.assertEquals(result, self.expected_joins)
 
