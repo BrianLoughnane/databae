@@ -6,9 +6,8 @@ class TestIterator(unittest.TestCase):
     def test_init(self):
         class Subclass(Iterator):
             pass
-
-        with self.assertRaises(ValueError):
-            Subclass()
+        instance = Subclass()
+        self.assertTrue(hasattr(instance, '_inputs'))
 
     def test_next(self):
         class Subclass(Iterator):
@@ -18,13 +17,4 @@ class TestIterator(unittest.TestCase):
         instance = Subclass()
         with self.assertRaises(ValueError):
             next(instance)
-
-    def test_close(self):
-        class Subclass(Iterator):
-            def  __init__(self):
-                pass
-
-        instance = Subclass()
-        with self.assertRaises(ValueError):
-            instance.__close__()
 

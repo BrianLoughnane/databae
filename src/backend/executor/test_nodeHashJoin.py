@@ -56,7 +56,7 @@ class TestHashJoin(unittest.TestCase):
         instance = HashJoin(
             self.get_input1_join_columns,
             self.get_input2_join_columns)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         self.assertEquals(
             next(instance),
@@ -76,7 +76,7 @@ class TestHashJoin(unittest.TestCase):
         instance = HashJoin(
             self.get_input1_join_columns,
             self.get_input2_join_columns)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         for expected in self.expected_joins:
             self.assertEquals(
@@ -85,17 +85,19 @@ class TestHashJoin(unittest.TestCase):
             )
 
     def test__filescan(self):
+        _movies = FileScan(SAMPLE_MOVIES)
+        _ratings = FileScan(SAMPLE_RATINGS)
 
         # pop off headers
-        next(self._input1)
-        next(self._input2)
+        next(_movies)
+        next(_ratings)
 
         instance = HashJoin(
             lambda r: r[0],
             lambda r: r[1])
-        instance.inputs = [
-            FileScan(SAMPLE_MOVIES),
-            FileScan(SAMPLE_RATINGS),
+        instance._inputs = [
+            _movies,
+            _ratings,
         ]
 
         result = next(instance)

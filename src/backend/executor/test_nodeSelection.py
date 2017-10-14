@@ -26,14 +26,14 @@ class TestSelection(unittest.TestCase):
         sets pointer to predicate
         '''
         instance = Selection(self._predicate)
-        instance.inputs = [self._input]
+        instance._inputs = [self._input]
 
         self.assertEquals(instance._predicate, self._predicate)
 
     @patch.object(Scan, '__close__')
     def test_next(self, scan_close_method):
         instance = Selection(self._predicate)
-        instance.inputs = [self._input]
+        instance._inputs = [self._input]
 
         self.assertEquals(
             next(instance),

@@ -40,13 +40,13 @@ class TestExecute(unittest.TestCase):
         ]
 
         self.expected_joins = [
-          (1, 'Brian', 30, 'eng', 1, 'eng', 4),
-          (2, 'Jason', 33, 'econ', 2, 'econ', 2),
-          (3, 'Christie', 28, 'accounting', 3, 'accounting', 3),
-          (4, 'Gayle', 33, 'edu', 4, 'edu', 4.5),
-          (5, 'Carolyn', 33, 'econ', 2, 'econ', 2),
-          (6, 'Michael', 65, 'law', 6, 'law', 5),
-          (7, 'Lori', 62, 'business', 7, 'business', 4)
+          ('1', 'Brian', '30', 'eng', 1, 'eng', 4),
+          ('2', 'Jason', '33', 'econ', 2, 'econ', 2),
+          ('3', 'Christie', '28', 'accounting', 3, 'accounting', 3),
+          ('4', 'Gayle', '33', 'edu', 4, 'edu', 4.5),
+          ('5', 'Carolyn', '33', 'econ', 2, 'econ', 2),
+          ('6', 'Michael', '65', 'law', 6, 'law', 5),
+          ('7', 'Lori', '62', 'business', 7, 'business', 4)
         ]
 
 
@@ -297,27 +297,36 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
-    def test_filescan_sort(self):
-        result = parse_and_execute([
-            ["DISTINCT", [""]],
-            ["SORT", ["genres", "title"]],
-            ["PROJECTION", ["movieId", "title", "genres"]],
-            ["SELECTION", []],
-            ["FILESCAN", FILE_PATH],
-        ])
+    # def test_filescan_sort(self):
+        # result = parse_and_execute([
+            # ["DISTINCT", [""]],
+            # ["SORT", ["genres", "title"]],
+            # ["PROJECTION", ["movieId", "title", "genres"]],
+            # ["SELECTION", []],
+            # ["FILESCAN", FILE_PATH],
+        # ])
         # TODO implement Limit, then come back to this
         # expected = [
           # ['33', 'Wings of Courage (1995)'],
         # ]
         # self.assertEquals(result, expected)
 
-    # def test_nested_loop_join(self):
-        # theta = lambda _row: _row[3] == _row[1]
-        # result = execute(tree([
-            # NestedLoopJoin(theta), [
-                # Scan(self._data),
-                # Scan(self.majors_gpa),
-            # ]
-        # ]))
-        # self.assertEquals(result, self.expected_joins)
+    def test_nested_loop_join(self):
+        students = Scan(self._data)
+        majors = Scan(self.majors_gpa)
+
+        # pop off headers
+        next(students)
+        next(majors)
+
+
+        theta = lambda _row1, _row2: _row1[3] == _row2[1]
+
+        result = list(execute(tree(
+            [NestedLoopJoin(theta),
+                [students],
+                [majors],
+            ])))
+
+        self.assertEquals(result, self.expected_joins)
 

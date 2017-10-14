@@ -51,7 +51,7 @@ class TestNestedLoopJoin(unittest.TestCase):
 
         # some simple cases
         instance = NestedLoopJoin(self.theta)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         self.assertEquals(
             next(instance),
@@ -69,7 +69,7 @@ class TestNestedLoopJoin(unittest.TestCase):
 
         # all cases (checks for proper EOF handling)
         instance = NestedLoopJoin(self.theta)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         for expected in self.expected_joins:
             self.assertEquals(
@@ -87,7 +87,7 @@ class TestNestedLoopJoin(unittest.TestCase):
         next(_input2)
 
         instance = NestedLoopJoin(self.theta)
-        instance.inputs = (_input1, _input2)
+        instance._inputs = (_input1, _input2)
 
         result = next(instance)
         expected = [

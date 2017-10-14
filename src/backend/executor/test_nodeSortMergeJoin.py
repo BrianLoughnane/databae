@@ -58,7 +58,7 @@ class TestSortMergeJoin(unittest.TestCase):
         instance = SortMergeJoin(
             self.theta,
             self.projection1, self.projection2)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         self.assertEquals(
             next(instance),
@@ -78,7 +78,7 @@ class TestSortMergeJoin(unittest.TestCase):
         instance = SortMergeJoin(
             self.theta,
             self.projection1, self.projection2)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         for expected in self.expected_joins:
             result = next(instance)
@@ -100,12 +100,12 @@ class TestSortMergeJoin(unittest.TestCase):
 
         self._input1 = Sort(
             projection(0),
-            FileScan(SAMPLE_MOVIES)
         )
+        self._input1._inputs = (FileScan(SAMPLE_MOVIES),)
         self._input2 = Sort(
             projection(1),
-            FileScan(SAMPLE_RATINGS)
         )
+        self._input2._inputs = (FileScan(SAMPLE_RATINGS),)
 
         self.theta = lambda _row1, _row2: _row1[0] == _row2[1]
 
@@ -117,7 +117,7 @@ class TestSortMergeJoin(unittest.TestCase):
         instance = SortMergeJoin(
             self.theta,
             self.projection1, self.projection2)
-        instance.inputs = (self._input1, self._input2)
+        instance._inputs = (self._input1, self._input2)
 
         result = next(instance)
 

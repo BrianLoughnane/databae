@@ -31,7 +31,7 @@ class TestProjection(unittest.TestCase):
     @patch.object(Scan, '__close__')
     def test_next(self, scan_close_method):
         instance = Projection(self._projector)
-        instance.inputs = (self._input,)
+        instance._inputs = (self._input,)
 
         self.assertEquals(
           next(instance),
