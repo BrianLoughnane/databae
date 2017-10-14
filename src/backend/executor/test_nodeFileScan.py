@@ -7,13 +7,17 @@ FILE_PATH = 'test_files/sample_movies.csv'
 class TestFileScan(unittest.TestCase):
     def setUp(self):
         self._list = [
-            ['movieId', 'title', 'genres'],
-            ['1','Toy Story (1995)', 'Adventure|Animation|Children|Comedy|Fantasy'],
-            ['2','Jumanji (1995)', 'Adventure|Children|Fantasy'],
-            ['3', 'Grumpier Old Men (1995)', 'Comedy|Romance'],
+            ('movieId', 'title', 'genres',),
+            ('1','Toy Story (1995)', 'Adventure|Animation|Children|Comedy|Fantasy',),
+            ('2','Jumanji (1995)', 'Adventure|Children|Fantasy',),
+            ('3', 'Grumpier Old Men (1995)', 'Comedy|Romance',),
         ]
         self._input = FILE_PATH
-        self._with_comma = ['11', 'American President, The (1995)','Comedy|Drama|Romance']
+
+        self._with_comma = (
+            '11', 'American President, The (1995)',
+            'Comedy|Drama|Romance',
+        )
 
     def test_next(self):
         instance = FileScan(self._input)

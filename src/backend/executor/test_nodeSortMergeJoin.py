@@ -95,37 +95,38 @@ class TestSortMergeJoin(unittest.TestCase):
                 except:
                     return row[index]
             return inner
-        # self.projection1 = lambda _row: int(_row[0])
-        # self.projection2 = lambda _row: float(_row[1])
 
-        self._input1 = Sort(
-            projection(0),
-        )
-        self._input1._inputs = (FileScan(SAMPLE_MOVIES),)
-        self._input2 = Sort(
-            projection(1),
-        )
-        self._input2._inputs = (FileScan(SAMPLE_RATINGS),)
+        movies = FileScan(SAMPLE_MOVIES)
+        ratings = FileScan(SAMPLE_RATINGS)
+
+        # pop off headers
+        next(movies)
+        next(ratings)
+
+        projection1 = lambda r: r[0]
+        projection2 = lambda r: r[1]
+
+        self._input1 = Sort(projection1)
+        self._input1._inputs = (movies,)
+
+        self._input2 = Sort(projection2)
+        self._input2._inputs = (ratings,)
 
         self.theta = lambda _row1, _row2: _row1[0] == _row2[1]
 
-        # pop off headers
-        next(self._input1)
-        next(self._input1)
-        next(self._input2)
-
         instance = SortMergeJoin(
             self.theta,
-            self.projection1, self.projection2)
+            projection1,
+            projection2)
         instance._inputs = (self._input1, self._input2)
 
         result = next(instance)
 
-        expected = [
+        expected = (
             '2', 'Jumanji (1995)',
                 'Adventure|Children|Fantasy',
             '1', '2', '3.5', '1112486027'
-        ]
+        )
 
         self.assertEquals(result, expected)
 

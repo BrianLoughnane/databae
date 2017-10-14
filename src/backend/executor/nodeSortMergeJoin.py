@@ -98,10 +98,9 @@ class SortMergeJoin(Iterator):
 
             # if condition not passing, pop off lowest
             if not self.theta(record1, record2):
-                print('%s does not match %s' % (
-                    record1, record2
-                ))
                 self.pop_lowest_buffer()
+                record1 = self.buffers.get(self._input1)
+                record2 = self.buffers.get(self._input2)
                 continue
 
             nested_first_records = []

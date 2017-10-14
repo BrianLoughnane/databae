@@ -90,10 +90,10 @@ class TestNestedLoopJoin(unittest.TestCase):
         instance._inputs = (_input1, _input2)
 
         result = next(instance)
-        expected = [
+        expected = (
             '2', 'Jumanji (1995)',
                 'Adventure|Children|Fantasy',
             '1', '2', '3.5', '1112486027'
-        ]
+        )
         self.assertEquals(result, expected)
 
