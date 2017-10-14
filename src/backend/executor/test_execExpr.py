@@ -376,3 +376,11 @@ class TestExecute(unittest.TestCase):
 
         self.assertEquals(result, expected_joins)
 
+    def test_index_scan(self):
+        result = list(execute(tree(
+            [Projection(lambda r: r.ratings_rating),
+                [IndexScan(
+                  index='ratings_movie_id_index',
+                  cond=(EQUALS, 5000))]]
+        )))
+
