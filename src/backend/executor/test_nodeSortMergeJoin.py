@@ -57,8 +57,9 @@ class TestSortMergeJoin(unittest.TestCase):
         # some simple cases
         instance = SortMergeJoin(
             self.theta,
-            self.projection1, self.projection2,
-            self._input1, self._input2)
+            self.projection1, self.projection2)
+        instance.inputs = (self._input1, self._input2)
+
         self.assertEquals(
             next(instance),
             self.expected_joins[0]
@@ -76,8 +77,8 @@ class TestSortMergeJoin(unittest.TestCase):
         # all cases (checks for proper EOF handling)
         instance = SortMergeJoin(
             self.theta,
-            self.projection1, self.projection2,
-            self._input1, self._input2)
+            self.projection1, self.projection2)
+        instance.inputs = (self._input1, self._input2)
 
         for expected in self.expected_joins:
             result = next(instance)
@@ -115,8 +116,8 @@ class TestSortMergeJoin(unittest.TestCase):
 
         instance = SortMergeJoin(
             self.theta,
-            self.projection1, self.projection2,
-            self._input1, self._input2)
+            self.projection1, self.projection2)
+        instance.inputs = (self._input1, self._input2)
 
         result = next(instance)
 

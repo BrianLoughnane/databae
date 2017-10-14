@@ -7,31 +7,31 @@ class SortMergeJoin(Iterator):
     def __init__(
         self,
         theta,
-        projection1, projection2,
-        _input1, _input2,
-    ):
+        projection1, projection2):
         '''
         SortMergeJoin can only join on a single condition.
         Assumes sorted input streams.
         '''
         self.theta = theta
 
-        self._input1 = _input1
-        self._input2 = _input2
-
         self.projection1 = projection1
         self.projection2 = projection2
 
-        self.projectors = {
-            self._input1: self.projection1,
-            self._input2: self.projection2,
-        }
+        self.initialized = False
+
+    def initialize(self):
+        self._input1 = self.inputs[0]
+        self._input2 = self.inputs[1]
 
         # pop off headers
         #TODO - handle this elsewhere
         next(self._input1)
         next(self._input2)
 
+        self.projectors = {
+            self._input1: self.projection1,
+            self._input2: self.projection2,
+        }
 
         self.buffers = {
             self._input1: next(self._input1),
@@ -39,6 +39,8 @@ class SortMergeJoin(Iterator):
         }
 
         self._iterable = self.get_iterable()
+
+        self.initialized = True
 
     def pop_lowest_buffer(self):
         '''
@@ -154,10 +156,12 @@ class SortMergeJoin(Iterator):
                         yield nested_record1 + nested_record2
 
     def __next__(self):
+        if not self.initialized:
+            self.initialize()
         try:
-          return next(self._iterable)
+            return next(self._iterable)
         except StopIteration:
-          return self.EOF
+            return self.EOF
 
     def __close__(self):
         pass
