@@ -19,6 +19,7 @@ class Sort(Iterator):
 
         A list holds the next values for each partion in memory
         '''
+        super().__init__()
         self._sort = _sort
         self.initialized = False
 
@@ -84,7 +85,7 @@ class Sort(Iterator):
         Returns a tuple with the sorted values, as well as a flag
         indicating if the EOF was reached.
         '''
-        _input = self.inputs[0]
+        _input = self._inputs[0]
         eof = False
         values = []
         for ii in range(0, self.PARTITION_LIMIT):
@@ -99,7 +100,7 @@ class Sort(Iterator):
         '''
         Returns the lowest of the in memory values.
         '''
-        _input = self.inputs[0]
+        _input = self._inputs[0]
         if not self.initialized:
             self.build_partitions_and_buffers()
 

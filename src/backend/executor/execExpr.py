@@ -33,16 +33,11 @@ def tree(pipeline):
         ],
     ]
 
-    # TODO - this is appending not only the children
-    inputs, but the grandchildren inputs as well.
     '''
     parent = pipeline[0]
     for children in pipeline[1:]:
-        # parent.inputs.append('foo')
-        parent.inputs.append(tree(children))
-    import ipdb; ipdb.set_trace();
+        parent._inputs.append(tree(children))
     return parent
-
 
 def execute(tree):
     for _next in tree:

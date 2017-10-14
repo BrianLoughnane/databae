@@ -12,6 +12,8 @@ class SortMergeJoin(Iterator):
         SortMergeJoin can only join on a single condition.
         Assumes sorted input streams.
         '''
+        super().__init__()
+
         self.theta = theta
 
         self.projection1 = projection1
@@ -20,8 +22,8 @@ class SortMergeJoin(Iterator):
         self.initialized = False
 
     def initialize(self):
-        self._input1 = self.inputs[0]
-        self._input2 = self.inputs[1]
+        self._input1 = self._inputs[0]
+        self._input2 = self._inputs[1]
 
         # pop off headers
         #TODO - handle this elsewhere

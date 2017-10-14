@@ -2,6 +2,7 @@ from executor.nodeIterator import Iterator
 
 class NestedLoopJoin(Iterator):
     def __init__(self, theta):
+        super().__init__()
         self.theta = theta
 
     def __next__(self):
@@ -13,8 +14,8 @@ class NestedLoopJoin(Iterator):
         pass
 
     def get_iterable(self):
-        _input1 = self.inputs[0]
-        _input2 = self.inputs[1]
+        _input1 = self._inputs[0]
+        _input2 = self._inputs[1]
 
         for record1 in _input1:
             if record1 is self.EOF:

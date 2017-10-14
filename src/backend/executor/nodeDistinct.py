@@ -2,11 +2,12 @@ from executor.nodeIterator import Iterator
 
 class Distinct(Iterator):
     def __init__(self, _keys):
+        super().__init__()
         self._keys = _keys
         self._last = None
 
     def __next__(self):
-        _next = next(self.inputs[0])
+        _next = next(self._inputs[0])
 
         if _next == self.EOF:
             self._input.__close__()

@@ -12,10 +12,11 @@ class Selection(Iterator):
     Selection(movies_file, predicate)
     '''
     def __init__(self, _predicate):
+        super().__init__()
         self._predicate = _predicate
 
     def _get_next(self):
-        _input = self.inputs[0]
+        _input = self._inputs[0]
 
         _next = next(_input)
         if _next == self.EOF:

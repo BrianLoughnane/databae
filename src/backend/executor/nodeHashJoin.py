@@ -21,6 +21,8 @@ class HashJoin(Iterator):
         '''
         Assumes sorted input streams
         '''
+        super().__init__()
+
         self.get_input1_join_columns = get_input1_join_columns
         self.get_input2_join_columns = get_input2_join_columns
 
@@ -35,7 +37,7 @@ class HashJoin(Iterator):
         Assumes first input is the smaller relation.
         '''
         self.hash_table = defaultdict(list)
-        _input1 = self.inputs[0]
+        _input1 = self._inputs[0]
         for record1 in _input1:
             if record1 == self.EOF:
                 break
@@ -51,7 +53,7 @@ class HashJoin(Iterator):
         if not hasattr(self, 'hash_table'):
             self.initiate_hash_table()
 
-        for record2 in self.inputs[1]:
+        for record2 in self._inputs[1]:
             if record2 == self.EOF:
                 yield self.EOF
 

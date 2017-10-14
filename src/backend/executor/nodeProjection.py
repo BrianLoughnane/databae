@@ -5,10 +5,11 @@ from operators import operator_map
 
 class Projection(Iterator):
     def __init__(self, _projector):
+        super().__init__()
         self._projector = _projector
 
     def __next__(self):
-        _input = self.inputs[0]
+        _input = self._inputs[0]
 
         _next = next(_input)
         if _next == self.EOF:

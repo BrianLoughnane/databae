@@ -1,9 +1,8 @@
 class Iterator():
     EOF = 'end of fun'
-    inputs = []
 
     def __init__(self):
-        raise ValueError('Not Implemented')
+        self._inputs = []
 
     def __next__(self):
         raise ValueError('Not Implemented')

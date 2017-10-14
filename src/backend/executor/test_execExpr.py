@@ -3,6 +3,9 @@ import unittest
 from executor.execExpr import (
     execute, parse_and_execute, tree
 )
+from executor.nodeScan import Scan
+from executor.nodeSelection import Selection
+from executor.nodeProjection import Projection
 from executor.nodeNestedLoopJoin import NestedLoopJoin
 
 FILE_PATH = 'test_files/sample_movies.csv'
@@ -40,6 +43,70 @@ class TestExecute(unittest.TestCase):
           (7, 'Lori', 62, 'business', 7, 'business', 4)
         ]
 
+
+    def test_tree__one(self):
+        scan_node = Scan(self._data)
+        result = tree([scan_node])
+        expected = scan_node
+        self.assertEquals(result, expected)
+
+        result = scan_node._inputs
+        expected = []
+        self.assertEquals(result, expected)
+
+    def test_tree__two(self):
+        selection_node = Selection(lambda a: a)
+        scan_node = Scan(self._data)
+
+        result = tree([
+            selection_node, [
+                scan_node
+            ]
+        ])
+        expected = selection_node
+        self.assertEquals(result, expected)
+
+        self.assertIn(
+            scan_node,
+            selection_node._inputs,
+        )
+        self.assertEquals(
+            len(selection_node._inputs),
+            1
+        )
+
+    def test_tree__nested(self):
+        projection_node = Projection(lambda a: a)
+        selection_node = Selection(lambda a: a)
+        scan_node = Scan([1,2,3])
+
+        result = tree(
+            [projection_node,
+                [selection_node,
+                    [scan_node]
+                ]
+            ]
+        )
+
+        self.assertEquals(result, projection_node)
+
+        self.assertIn(
+            selection_node,
+            projection_node._inputs,
+        )
+        self.assertEquals(
+            len(projection_node._inputs),
+            1
+        )
+
+        self.assertIn(
+            scan_node,
+            selection_node._inputs,
+        )
+        self.assertEquals(
+            len(selection_node._inputs),
+            1
+        )
 
     def test_none(self):
         result = parse_and_execute([])
