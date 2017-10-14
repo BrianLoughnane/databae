@@ -4,8 +4,8 @@ class Scan(Iterator):
     '''
     Wraps a generator to return EOF when it's complete
     '''
-    def __init__(self, _input):
-        self._input = _input
+    def __init__(self, values):
+        self.values = values
         self.reset()
 
     def __next__(self):
@@ -18,5 +18,5 @@ class Scan(Iterator):
         pass
 
     def reset(self):
-        self._iterator = (ii for ii in self._input)
+        self._iterator = (ii for ii in self.values)
 

@@ -6,24 +6,23 @@ FILE_PATH = 'src/backend/executor/'
 
 class TestScan(unittest.TestCase):
     def setUp(self):
-        self._list = list(range(2))
-        self._input = (ii for ii in self._list)
+        self.values = list(range(2))
 
     def test_init(self):
-        instance = Scan(self._input)
-        self.assertEquals(instance._input, self._input)
+        instance = Scan(self.values)
+        self.assertEquals(instance.values, self.values)
 
     def test_next(self):
-        instance = Scan(self._input)
+        instance = Scan(self.values)
 
         self.assertEquals(
           next(instance),
-          self._list[0]
+          self.values[0]
         )
 
         self.assertEquals(
           next(instance),
-          self._list[1]
+          self.values[1]
         )
 
         self.assertEquals(
@@ -32,5 +31,5 @@ class TestScan(unittest.TestCase):
         )
 
     def test_close(self):
-        instance = Scan(self._input)
+        instance = Scan(self.values)
         self.assertEquals(instance.__close__(), None)
