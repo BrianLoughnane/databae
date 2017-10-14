@@ -50,8 +50,9 @@ class TestNestedLoopJoin(unittest.TestCase):
         next(self._input2)
 
         # some simple cases
-        instance = NestedLoopJoin(
-            self.theta, self._input1, self._input2)
+        instance = NestedLoopJoin(self.theta)
+        instance.inputs = (self._input1, self._input2)
+
         self.assertEquals(
             next(instance),
             self.expected_joins[0]
@@ -67,8 +68,8 @@ class TestNestedLoopJoin(unittest.TestCase):
         next(self._input2)
 
         # all cases (checks for proper EOF handling)
-        instance = NestedLoopJoin(
-            self.theta, self._input1, self._input2)
+        instance = NestedLoopJoin(self.theta)
+        instance.inputs = (self._input1, self._input2)
 
         for expected in self.expected_joins:
             self.assertEquals(
@@ -77,16 +78,17 @@ class TestNestedLoopJoin(unittest.TestCase):
             )
 
     def test__filescan(self):
-        self._input1 = FileScan(SAMPLE_MOVIES)
-        self._input2 = FileScan(SAMPLE_RATINGS)
+        _input1 = FileScan(SAMPLE_MOVIES)
+        _input2 = FileScan(SAMPLE_RATINGS)
         self.theta = lambda _row1, _row2: _row1[0] == _row2[1]
 
         # pop off headers
-        next(self._input1)
-        next(self._input2)
+        next(_input1)
+        next(_input2)
 
-        instance = NestedLoopJoin(
-            self.theta, self._input1, self._input2)
+        instance = NestedLoopJoin(self.theta)
+        instance.inputs = (_input1, _input2)
+
         result = next(instance)
         expected = [
             '2', 'Jumanji (1995)',

@@ -1,28 +1,30 @@
 from executor.nodeIterator import Iterator
 
 class NestedLoopJoin(Iterator):
-    def __init__(self, theta, _input1, _input2):
-        self._input1 = _input1
-        self._input2 = _input2
+    def __init__(self, theta):
         self.theta = theta
-        self._iterable = self.func()
-
-    def func(self):
-        for record1 in self._input1:
-            if record1 is self.EOF:
-                yield self.EOF
-            for record2 in self._input2:
-                if record2 is self.EOF:
-                    self._input2.reset()
-                    break
-                if self.theta(record1, record2):
-                    yield record1 + record2
 
     def __next__(self):
+        if not hasattr(self, '_iterable'):
+            self._iterable = self.get_iterable()
         return next(self._iterable)
 
     def __close__(self):
         pass
+
+    def get_iterable(self):
+        _input1 = self.inputs[0]
+        _input2 = self.inputs[1]
+
+        for record1 in _input1:
+            if record1 is self.EOF:
+                yield self.EOF
+            for record2 in _input2:
+                if record2 is self.EOF:
+                    _input2.reset()
+                    break
+                if self.theta(record1, record2):
+                    yield record1 + record2
 
     @staticmethod
     def parse_args(schema, args):
