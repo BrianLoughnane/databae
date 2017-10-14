@@ -12,23 +12,35 @@ PRINT = False
 
 def tree(pipeline):
     '''
-    Takes a nested list of parent-children tuples of instantiated
+    Takes a nested list structure of instantiated
     nodes and links them together.
 
+    The first node of the list will take subsequent
+    items as inputs
+
     [
-        Projection(predicate), [
-            NestedLoopJoin(theta), [
-                Scan(relationA),
-                Scan(relationB),
-            ]
-        ]
+        Selection(predicate), []
+
+    [Projection(predicate),
+        [NestedLoopJoin(theta),
+            [Sort(projection),
+                [Scan(relationA)],
+                [Scan(relationB)],
+            ],
+        ],
+        [NestedLoopJoin(theta),
+            [Sort(projection),
+                [Scan(relationC)],
+                [Scan(relationD)],
+            ],
+        ],
     ]
 
     '''
-    return reduce(
-        lambda accum, next_item: next_item(accum),
-        pipeline,
-    )
+    parent = pipeline[0]
+    for children in lst[1:]:
+        parent.inputs.append(tree(children))
+    return parent
 
 
 def execute(tree):
