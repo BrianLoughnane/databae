@@ -11,20 +11,18 @@ class Selection(Iterator):
     predicate = lambda m: m.id = 5
     Selection(movies_file, predicate)
     '''
-    def __init__(self, _predicate, _input):
-        self._input = _input
+    def __init__(self, _predicate):
         self._predicate = _predicate
 
     def _get_next(self):
-        _next = next(self._input)
+        _input = self.inputs[0]
 
+        _next = next(_input)
         if _next == self.EOF:
-            self._input.__close__()
+            _input.__close__()
             return self.EOF
-
         if self._predicate(_next):
             return _next
-
         return self._get_next()
 
     def __next__(self):

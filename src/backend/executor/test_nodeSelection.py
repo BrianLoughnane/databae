@@ -17,7 +17,7 @@ class TestSelection(unittest.TestCase):
           (6, 'Michael', 65, 'law'),
           (7, 'Lori', 62, 'business')
         ]
-        self._input = Scan((ii for ii in self._data))
+        self._input = Scan([ii for ii in self._data])
         self._predicate = lambda _row: _row[3] == 'econ'
 
     def test_init(self):
@@ -25,14 +25,15 @@ class TestSelection(unittest.TestCase):
         sets pointer to child node
         sets pointer to predicate
         '''
-        instance = Selection(self._predicate, self._input)
+        instance = Selection(self._predicate)
+        instance.inputs = [self._input]
 
-        self.assertEquals(instance._input, self._input)
         self.assertEquals(instance._predicate, self._predicate)
 
     @patch.object(Scan, '__close__')
     def test_next(self, scan_close_method):
-        instance = Selection(self._predicate, self._input)
+        instance = Selection(self._predicate)
+        instance.inputs = [self._input]
 
         self.assertEquals(
             next(instance),
@@ -54,7 +55,7 @@ class TestSelection(unittest.TestCase):
         self.assertTrue(scan_close_method.called)
 
     def test_close(self):
-        instance = Selection(self._predicate, self._input)
+        instance = Selection(self._predicate)
 
         self.assertEquals(instance.__close__(), None)
 
