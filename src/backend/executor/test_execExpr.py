@@ -7,6 +7,8 @@ from executor.helpers import (
     Debug, Print
 )
 
+from executor.nodeCount import Count
+from executor.nodeIndexScan import IndexScan
 from executor.nodeScan import Scan
 from executor.nodeSelection import Selection
 from executor.nodeSort import Sort
@@ -378,9 +380,11 @@ class TestExecute(unittest.TestCase):
 
     def test_index_scan(self):
         result = list(execute(tree(
-            [Projection(lambda r: r.ratings_rating),
-                [IndexScan(
-                  index='ratings_movie_id_index',
-                  cond=(EQUALS, 5000))]]
+            [Count(),
+                [Projection(lambda r: r.ratings_rating),
+                    [IndexScan(
+                      index='ratings_movie_id_index',
+                      cond=(EQUALS, 5000))]]
+            ]
         )))
 
