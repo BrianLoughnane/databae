@@ -7,6 +7,7 @@ from executor.nodeIterator import Iterator
 # from executor.nodeIndexScan import MemIndexScan
 from operators import Equals, LessThan, GreaterThan
 
+# note - delimiter must be >= 3
 DELIMITER = 3
 
 class Node():
@@ -27,8 +28,6 @@ class Node():
                 try:
                     page_records.append(data.pop(0))
                 except IndexError:
-                    if page_records:
-                        pages.append(Node(page_records))
                     break
             pages.append(Node(page_records))
         return pages
@@ -37,7 +36,6 @@ class LinkedList():
     def __init__(self, nodes):
         first_node = nodes[0]
         last_node = nodes[0]
-
         for node in nodes[1:]:
             node._prev = last_node
             last_node._next = node
@@ -135,7 +133,6 @@ class BPlusTree():
 
     def iterate_over_leaf(self, operator, node):
         value = operator.get_value()
-
         for record in node:
             record_value = self.projection(record)
             if operator.check(record):
@@ -241,4 +238,21 @@ class TestBPlusTree(unittest.TestCase):
           Iterator.EOF,
         ]
         self.assertEquals(result[:7], expected)
+
+    def test_search__greater_than(self):
+        operator = GreaterThan('id', 3, self.schema)
+        search = self.tree.search(operator)
+        result = list(search)
+        expected = [
+          (4, 'Gayle', '33', 'edu'),
+          (5, 'Carolyn', '33', 'econ'),
+          (6, 'Michael', '65', 'law'),
+          (7, 'Lori', '62', 'business'),
+          (8, 'Zoe', '4', 'funny business'),
+          (9, 'Andy', '4', 'funny business'),
+          (10, 'Flanagan', '44', 'funny business'),
+          Iterator.EOF,
+        ]
+        self.assertEquals(result[:8], expected)
+
 
