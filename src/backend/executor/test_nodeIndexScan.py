@@ -83,6 +83,9 @@ class IndexPage():
     def minval(self):
         return self.values[0][0]
 
+    def minpointer(self):
+        return self.values[0][1]
+
     def get_tuple(self):
         return (self.minval(), self)
 
@@ -130,39 +133,65 @@ class BPlusTree():
                 index_page_max.parent = new_parent
                 self.root = new_parent
 
-    def iterate_over_leaf(self, node, value, theta):
+    def iterate_over_leaf(self, operator, node):
+        value = operator.get_value()
+
         for record in node:
             record_value = self.projection(record)
-            if theta(record_value, value):
+            if operator.check(record):
                 yield record
-        # condition ==, if val > operand, break
-        # condition >, >=, if not next page, break,
-            # else page = next page
-        # condition <, <=, if val =, > operand, break
+
+        if operator.isGreaterThan:
+            if not node._next:
+                yield Iterator.EOF
+            else:
+                yield from self.iterate_over_leaf(
+                    operator, node._next)
+
+        if operator.isLessThan and record_value < value:
+            if not node._next:
+                yield Iterator.EOF
+
+            else:
+                yield from self.iterate_over_leaf(
+                    operator, node._next)
+
         yield Iterator.EOF
 
 
-    def search(self, operator, value, theta, node=None):
+    def search(self, operator, node=None):
+        value = operator.get_value()
+
         current_node = node or self.root
 
         if isinstance(current_node, Node):
-            return self.iterate_over_leaf(current_node, value, theta)
-        else:
+            return self.iterate_over_leaf(operator, current_node)
+
+        elif operator.isLessThan:
+            # for less than, start at first leaf node
+            return self.search(
+                operator,
+                node=current_node.minpointer()
+            )
+
+        elif operator.isEquals or operator.isGreaterThan:
+            # go to pointer prior to first key > value
             previous_pointer = None
             for key, pointer in current_node:
                 if key > value:
                     return self.search(
-                        operator, value, theta,
+                        operator,
                         node=(previous_pointer or pointer)
                     )
                 previous_pointer = pointer
             return self.search(
-                operator, value, theta,
+                operator,
                 node=previous_pointer,
             )
 
 class TestBPlusTree(unittest.TestCase):
     def setUp(self):
+        self.schema = ('id', 'name', 'age', 'major')
         # index on id (column 1)
         self.data = [
           (1, 'Brian', '30', 'eng'),
@@ -191,10 +220,25 @@ class TestBPlusTree(unittest.TestCase):
         # create a tree over the indexed vals in the list(B+ tree)
         self.tree = BPlusTree(lst, projection)
 
-    def test_search(self):
-        theta = lambda a, b: a == b
-        search = self.tree.search(None, 5, theta)
+    def test_search__equals(self):
+        operator = Equals('id', 5, self.schema)
+        search = self.tree.search(operator)
         result = next(search)
         expected = (5, 'Carolyn', '33', 'econ')
         self.assertEquals(result, expected)
+
+    def test_search__less_than(self):
+        operator = LessThan('id', 7, self.schema)
+        search = self.tree.search(operator)
+        result = list(search)
+        expected = [
+          (1, 'Brian', '30', 'eng'),
+          (2, 'Jason', '33', 'econ'),
+          (3, 'Christie', '28', 'accounting'),
+          (4, 'Gayle', '33', 'edu'),
+          (5, 'Carolyn', '33', 'econ'),
+          (6, 'Michael', '65', 'law'),
+          Iterator.EOF,
+        ]
+        self.assertEquals(result[:7], expected)
 

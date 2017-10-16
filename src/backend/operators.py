@@ -3,17 +3,23 @@ class Operator():
     isLessThan = False
     isGreaterThan = False
 
-    def __init__(self, operand1__name, operand2__name):
-        self.operand1__name = operand1__name
-        self.operand2__name = operand2__name
+    def __init__(self, operand1, operand2, schema):
+        '''
+        operand1 - column name like 'id'
+        operand2 - value to be compared against
+        '''
+        self.operand1 = operand1
+        self.operand2 = operand2
+        self.schema = schema
 
-    def check(self, schema, row):
-        operand1__index = schema.index(self.operand1__name)
-
+    def check(self, row):
+        operand1__index = self.schema.index(self.operand1)
         operand1__value = row[operand1__index]
-        operand2__value = self.operand2__name
 
-        return self.operator(operand1__value, operand2__value)
+        return self.operator(operand1__value, self.operand2)
+
+    def get_value(self):
+        return self.operand2
 
     def operator(self):
         raise ValueError('Not implemented')

@@ -53,16 +53,15 @@ class Selection(Iterator):
             operand2 = condition[2]
 
             operator_class = operator_map.get(operator_key)
-            operator = operator_class(operand1, operand2)
+            operator = operator_class(operand1, operand2, schema)
 
             operators.append(operator)
 
         # return a function that predicates all operators
-        def master_predicate(schema, row):
+        def master_predicate(row):
             for operator in operators:
-                if operator.check(schema, row) == False:
+                if operator.check(row) == False:
                     return False
             return True
-
-        return partial(master_predicate, schema)
+        return master_predicate
 
