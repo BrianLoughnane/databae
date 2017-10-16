@@ -159,32 +159,51 @@ class BPlusTree():
     def search(self, operator, node=None):
         value = operator.get_value()
 
-        current_node = node or self.root
+        node = node or self.root
 
-        if isinstance(current_node, Node):
-            return self.iterate_over_leaf(operator, current_node)
+        if isinstance(node, Node):
+            return self.iterate_over_leaf(operator, node)
+
+        elif operator.isEquals or operator.isGreaterThan:
+            leaf_node = self.get_leaf_node_for_value(value)
+            return self.iterate_over_leaf(operator, leaf_node)
 
         elif operator.isLessThan:
             # for less than, start at first leaf node
-            return self.search(
-                operator,
-                node=current_node.minpointer()
-            )
+            min_leaf_node = self.get_min_leaf_node()
+            return self.iterate_over_leaf(operator, min_leaf_node)
 
-        elif operator.isEquals or operator.isGreaterThan:
-            # go to pointer prior to first key > value
-            previous_pointer = None
-            for key, pointer in current_node:
-                if key > value:
-                    return self.search(
-                        operator,
-                        node=(previous_pointer or pointer)
-                    )
-                previous_pointer = pointer
-            return self.search(
-                operator,
-                node=previous_pointer,
-            )
+    def get_min_leaf_node(self, node=None):
+        node = node or self.root
+
+        if isinstance(node, Node):
+            return node
+
+        return self.get_min_leaf_node(node=node.minpointer())
+
+    def get_leaf_node_for_value(self, value, node=None):
+        node = node or self.root
+
+        if isinstance(node, Node):
+            return node
+
+        # go to pointer prior to first key > value
+        previous_pointer = None
+        for key, pointer in node:
+            if key > value:
+                return self.get_leaf_node_for_value(
+                    value,
+                    node=(previous_pointer or pointer)
+                )
+            previous_pointer = pointer
+        return self.get_leaf_node_for_value(
+            value,
+            node=(previous_pointer or pointer)
+        )
+
+    def insert(self, record):
+        index_value = self.projection(record)
+        leaf_node = self.get_leaf_node_for_value(index_value)
 
 class TestBPlusTree(unittest.TestCase):
     def setUp(self):
@@ -255,4 +274,18 @@ class TestBPlusTree(unittest.TestCase):
         ]
         self.assertEquals(result[:8], expected)
 
+    # def test_insert(self):
+        # operator = Equals('id', 11, self.schema)
+        # search = self.tree.search(operator)
+        # result = next(search)
+        # expected = Iterator.EOF
+        # self.assertEquals(result, expected)
+
+        # new_tuple = (11, 'Flanahan', '45', 'funny business'),
+        # self.tree.insert(new_tuple)
+
+        # search = self.tree.search(operator)
+        # result = next(search)
+        # expected = new_tuple
+        # self.assertEquals(result, expected)
 
