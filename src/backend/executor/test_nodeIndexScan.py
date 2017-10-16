@@ -3,7 +3,9 @@ import unittest
 
 from executor.execExpr import tree, execute
 from executor.nodeScan import Scan
+from executor.nodeIterator import Iterator
 # from executor.nodeIndexScan import MemIndexScan
+from operators import Equals, LessThan, GreaterThan
 
 DELIMITER = 3
 
@@ -12,6 +14,9 @@ class Node():
         self.values = values
         self._next = None
         self._prev = None
+
+    def __iter__(self):
+        return iter(self.values)
 
     @staticmethod
     def create_pages_from_data(data):
@@ -54,6 +59,9 @@ class IndexPage():
         self.values = values
         self.parent = None
 
+    def __iter__(self):
+        return iter(self.values)
+
     def add(self, tup):
         self.values.append(tup)
         self.values.sort(key=lambda t: t[0])
@@ -80,9 +88,10 @@ class IndexPage():
 
 class BPlusTree():
     def __init__(self, lst, projection):
-        self.create_index_tree_over_linked_list(lst, projection)
+        self.projection = projection
+        self.create_index_tree_over_linked_list(lst)
 
-    def create_index_tree_over_linked_list(self, lst, projection):
+    def create_index_tree_over_linked_list(self, lst):
         self.root = index_page = IndexPage()
 
         # add initial tuple (-Infinity, -> lst.first_node) to index
@@ -98,7 +107,7 @@ class BPlusTree():
                 break
 
             # get min value
-            minval = projection(node.values[0])
+            minval = self.projection(node.values[0])
             pair = (minval, node)
 
             self.add_tuple_to_index(pair, index_page)
@@ -121,6 +130,37 @@ class BPlusTree():
                 index_page_max.parent = new_parent
                 self.root = new_parent
 
+    def iterate_over_leaf(self, node, value, theta):
+        for record in node:
+            record_value = self.projection(record)
+            if theta(record_value, value):
+                yield record
+        # condition ==, if val > operand, break
+        # condition >, >=, if not next page, break,
+            # else page = next page
+        # condition <, <=, if val =, > operand, break
+        yield Iterator.EOF
+
+
+    def search(self, operator, value, theta, node=None):
+        current_node = node or self.root
+
+        if isinstance(current_node, Node):
+            return self.iterate_over_leaf(current_node, value, theta)
+        else:
+            previous_pointer = None
+            for key, pointer in current_node:
+                if key > value:
+                    return self.search(
+                        operator, value, theta,
+                        node=(previous_pointer or pointer)
+                    )
+                previous_pointer = pointer
+            return self.search(
+                operator, value, theta,
+                node=previous_pointer,
+            )
+
 class TestBPlusTree(unittest.TestCase):
     def setUp(self):
         # index on id (column 1)
@@ -134,6 +174,7 @@ class TestBPlusTree(unittest.TestCase):
           (7, 'Lori', '62', 'business'),
           (8, 'Zoe', '4', 'funny business'),
           (9, 'Andy', '4', 'funny business'),
+          (10, 'Flanagan', '44', 'funny business'),
         ]
 
         # assumes data is sorted on the index key
@@ -150,10 +191,10 @@ class TestBPlusTree(unittest.TestCase):
         # create a tree over the indexed vals in the list(B+ tree)
         self.tree = BPlusTree(lst, projection)
 
-    def test(self):
-        import ipdb; ipdb.set_trace();
-        # instance = MemIndexScan(
-            # self.tree, cond=('EQUALS', 4))
-        # result = next(instance)
-        # expected = ('4', 'Gayle', '33', 'edu')
-        # self.assertEquals(result, expected)
+    def test_search(self):
+        theta = lambda a, b: a == b
+        search = self.tree.search(None, 5, theta)
+        result = next(search)
+        expected = (5, 'Carolyn', '33', 'econ')
+        self.assertEquals(result, expected)
+

@@ -1,10 +1,15 @@
 class Operator():
+    isEquals = False
+    isLessThan = False
+    isGreaterThan = False
+
     def __init__(self, operand1__name, operand2__name):
         self.operand1__name = operand1__name
         self.operand2__name = operand2__name
 
     def check(self, schema, row):
         operand1__index = schema.index(self.operand1__name)
+
         operand1__value = row[operand1__index]
         operand2__value = self.operand2__name
 
@@ -14,12 +19,15 @@ class Operator():
         raise ValueError('Not implemented')
 
 class Equals(Operator):
+    isEquals = True
     operator = lambda _s, a, b: a == b
 
 class LessThan(Operator):
+    isLessThan = True
     operator = lambda _s, a, b: a < b
 
 class GreaterThan(Operator):
+    isGreaterThan = True
     operator = lambda _s, a, b: a > b
 
 operator_map = {
