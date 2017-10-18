@@ -143,8 +143,7 @@ class BPlusTree():
             # get min value
             minval = self.projection(node.values[0])
             pair = (minval, node)
-            self.add_tuple_to_index(pair, index_page)
-
+            index_page = self.add_tuple_to_index(pair, index_page)
         return index_page
 
     def add_record_to_node(self, record, node):
@@ -161,10 +160,13 @@ class BPlusTree():
 
         if index_page.has_room():
             index_page.add(pair)
-
+            return index_page
         else:
             # split
             index_page_min, index_page_max = index_page.split()
+
+            # add pair to max of split
+            self.add_tuple_to_index(pair, index_page_max)
 
             # when a node splits, the max gets orphaned
             # thus, when the index splits, the node becomes
@@ -172,8 +174,9 @@ class BPlusTree():
             min_tuple = index_page_min.get_tuple()
             max_tuple = index_page_max.get_tuple()
 
-            if index_page.parent:
-                self.add_tuple_to_index(max_tuple, index_page.parent)
+            if index_page_min.parent:
+                self.add_tuple_to_index(
+                    max_tuple, index_page_min.parent)
 
             else:
                 # if splitting root node
@@ -181,6 +184,7 @@ class BPlusTree():
                 index_page_min.parent = new_parent
                 index_page_max.parent = new_parent
                 self.root = new_parent
+            return index_page_max
 
     def iterate_over_leaf(self, operator, node):
         value = operator.get_value()
@@ -269,11 +273,16 @@ class BPlusTree():
     def print(self, node=None):
         node = node or self.root
 
-        # print(node.values)
+        print('node')
+        print(node)
+        print('node.values')
+        print(node.values)
 
         for key, pointer in node:
             try:
+                print('key')
                 print(key)
+                print('pointer')
                 print(pointer)
                 self.print(node=pointer)
             except ValueError:
@@ -310,6 +319,7 @@ class TestBPlusTree(unittest.TestCase):
 
         # create a tree over the indexed vals in the list(B+ tree)
         self.tree = BPlusTree(lst, projection)
+        import ipdb; ipdb.set_trace();
 
     def test_search__equals(self):
         operator = Equals('id', 5, self.schema)
@@ -318,11 +328,8 @@ class TestBPlusTree(unittest.TestCase):
         expected = (5, 'Carolyn', '33', 'econ')
         self.assertEquals(result, expected)
 
-    # TODO -- not finding max leaf node
-    # -- not creating index page for it
     def test_search__equals__max(self):
         operator = Equals('id', 10, self.schema)
-        import ipdb; ipdb.set_trace();
         search = self.tree.search(operator)
         result = next(search)
         expected = (10, 'Flanagan', '44', 'funny business')
