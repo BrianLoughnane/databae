@@ -469,6 +469,65 @@ class TestExecute(unittest.TestCase):
         ]
         self.assertEquals(result, expected)
 
+    def test_mem_index_scan__sort__merge_join(self):
+        # index on age
+        schema = ('id', 'name', 'age', 'major')
+        data = [
+          (1, 'Brian', 30, 'eng'),
+          (2, 'Jason', 33, 'econ'),
+          (3, 'Christie', 28, 'accounting'),
+          (4, 'Gayle', 33, 'edu'),
+          (5, 'Carolyn', 33, 'econ'),
+          (6, 'Michael', 65, 'law'),
+          (7, 'Lori', 62, 'business')
+        ]
+        projection = lambda r: r[2]
+        operator = operators.LessThan('age', 34, schema)
+
+        # index on gpa
+        schema2 = ('id', 'major', 'gpa')
+        data2 = [
+          ('3', 'accounting', 3),
+          ('7', 'business', 4),
+          ('2', 'econ', 2),
+          ('4', 'edu', 4.5),
+          ('1', 'eng', 4),
+          ('6', 'law', 5),
+        ]
+        projection2 = lambda r: r[2]
+        operator2 = operators.GreaterThan('gpa', 3, schema2)
+
+        theta = lambda r1, r2: r1[1] == r2[0]
+
+        # select d.name, d.major, d2.major, d2.gpa
+        # from data d, data2 d2
+        # where d.major = d2.major
+        # and d.age < 34
+        # and d2.gpa > 3
+
+        # since it's sorted on major, edu comes first
+        # since sort uses csv reader, everything's a string
+        expected_joins = [
+          ('Gayle','edu', 'edu', '4.5'),
+          ('Brian','eng', 'eng', '4'),
+        ]
+
+        result = list(execute(tree(
+            [SortMergeJoin(theta, lambda r: r[1], lambda r: r[0]),
+                [Sort(lambda r: r[1]),
+                    [Projection(lambda r: (r[1], r[3])),
+                        [BPlusTree(data, projection).search(operator)]
+                    ]
+                ],
+                [Sort(lambda r: r[0]),
+                    [Projection(lambda r: (r[1], r[2])),
+                        [BPlusTree(data2, projection2).search(operator2)]
+                    ]
+                ]
+            ]
+        )))
+        self.assertEquals(result, expected_joins)
+
     # def test_index_scan(self):
         # result = list(execute(tree(
             # [Count(),
