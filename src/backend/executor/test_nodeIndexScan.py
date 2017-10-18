@@ -17,6 +17,18 @@ class Node():
         self._prev = None
         self.parent = None
 
+    # def __repr__(self):
+        # print(type(self))
+        # print(self.values)
+        # return ''
+
+class LeafNode(Node):
+    def __init__(self, values):
+        self.values = values
+        self._next = None
+        self._prev = None
+        self.parent = None
+
     def __iter__(self):
         return iter(self.values)
 
@@ -29,14 +41,20 @@ class Node():
 
     def split(self):
         middle_index = int(len(self.values) / 2)
-
         min_vals = self.values[:middle_index]
         max_vals = self.values[middle_index:]
 
-        min_node = Node(min_vals)
-        max_node = Node(max_vals)
+        self.values = min_vals
+        max_node = LeafNode(max_vals)
 
-        return min_node, max_node
+        _next = self._next
+
+        _next._prev = max_node
+        max_node._next = _next
+
+        self._next = max_node
+
+        return self, max_node
 
     def minval(self):
         return self.values[0][0]
@@ -54,7 +72,7 @@ class Node():
                     page_records.append(data.pop(0))
                 except IndexError:
                     break
-            pages.append(Node(page_records))
+            pages.append(LeafNode(page_records))
         return pages
 
 class LinkedList():
@@ -81,7 +99,7 @@ class LinkedList():
             print(node.values)
             node = node._next
 
-class IndexPage():
+class IndexNode(Node):
     '''
     `values` is an array of (value, pointer) tuples
     where value is the minval for the node that
@@ -107,10 +125,14 @@ class IndexPage():
         min_vals = self.values[:middle_index]
         max_vals = self.values[middle_index:]
 
-        min_index = IndexPage(values=min_vals)
-        max_index = IndexPage(values=max_vals)
+        self.values = min_vals
+        max_index = IndexNode(values=max_vals)
 
-        return min_index, max_index
+        # reassign parents for all pointers in max page
+        for key, pointer in max_vals:
+            pointer.parent = max_index
+
+        return self, max_index
 
     def minval(self):
         return self.values[0][0]
@@ -127,12 +149,13 @@ class BPlusTree():
         self.create_index_tree_over_linked_list(lst)
 
     def create_index_tree_over_linked_list(self, lst):
-        self.root = index_page = IndexPage()
+        self.root = index_page = IndexNode()
 
         # add initial tuple (-Infinity, -> lst.first_node) to index
         node = lst.get_first_node()
         pair = (-inf, node)
         self.add_tuple_to_index(pair, index_page)
+        node.parent = index_page
 
         # for node in linked list, starting at 2nd node:
         while True:
@@ -143,34 +166,35 @@ class BPlusTree():
             # get min value
             minval = self.projection(node.values[0])
             pair = (minval, node)
+
             index_page = self.add_tuple_to_index(pair, index_page)
+
         return index_page
 
     def add_record_to_node(self, record, node):
         if node.has_room():
-            node.add(record)
+            node.add(record, self.projection)
 
         else:
             _, node_page_max = node.split()
+            node_page_max.add(record, self.projection)
             max_tuple = node_page_max.get_tuple()
             self.add_tuple_to_index(max_tuple, node.parent)
 
     def add_tuple_to_index(self, pair, index_page):
         key, node = pair
-
         if index_page.has_room():
             index_page.add(pair)
+            node.parent = index_page
             return index_page
+
         else:
             # split
             index_page_min, index_page_max = index_page.split()
 
-            # add pair to max of split
+            # add tuple to index_page_max
             self.add_tuple_to_index(pair, index_page_max)
 
-            # when a node splits, the max gets orphaned
-            # thus, when the index splits, the node becomes
-                # parented by the max index
             min_tuple = index_page_min.get_tuple()
             max_tuple = index_page_max.get_tuple()
 
@@ -180,10 +204,11 @@ class BPlusTree():
 
             else:
                 # if splitting root node
-                new_parent = IndexPage(values=[min_tuple, max_tuple])
+                new_parent = IndexNode(values=[min_tuple, max_tuple])
                 index_page_min.parent = new_parent
                 index_page_max.parent = new_parent
                 self.root = new_parent
+
             return index_page_max
 
     def iterate_over_leaf(self, operator, node):
@@ -216,7 +241,7 @@ class BPlusTree():
 
         node = node or self.root
 
-        if isinstance(node, Node):
+        if isinstance(node, LeafNode):
             return self.iterate_over_leaf(operator, node)
 
         elif operator.isEquals or operator.isGreaterThan:
@@ -231,7 +256,7 @@ class BPlusTree():
     def get_min_leaf_node(self, node=None):
         node = node or self.root
 
-        if isinstance(node, Node):
+        if isinstance(node, LeafNode):
             return node
 
         return self.get_min_leaf_node(node=node.minpointer())
@@ -239,7 +264,7 @@ class BPlusTree():
     def get_leaf_node_for_value(self, value, node=None):
         node = node or self.root
 
-        if isinstance(node, Node):
+        if isinstance(node, LeafNode):
             return node
 
         # go to pointer prior to first key > value
@@ -258,9 +283,21 @@ class BPlusTree():
 
     def insert(self, record):
         index_value = self.projection(record)
-
         leaf_node = self.get_leaf_node_for_value(index_value)
         self.add_record_to_node(record, leaf_node)
+
+    def leaves(self):
+        node = self.get_min_leaf_node()
+
+        nodes = [node]
+        while True:
+            node = node._next
+            if not node:
+                break
+            nodes.append(node)
+
+        return nodes
+
 
     def print_leaves(self):
         node = self.get_min_leaf_node()
@@ -309,7 +346,7 @@ class TestBPlusTree(unittest.TestCase):
         # assumes data is sorted on the index key
 
         # create a bunch of leaf note "pages" representing heap
-        leaf_nodes = Node.create_pages_from_data(self.data)
+        leaf_nodes = LeafNode.create_pages_from_data(self.data)
 
         # create a linked list over the heap pages
         lst = LinkedList(leaf_nodes)
@@ -319,7 +356,6 @@ class TestBPlusTree(unittest.TestCase):
 
         # create a tree over the indexed vals in the list(B+ tree)
         self.tree = BPlusTree(lst, projection)
-        import ipdb; ipdb.set_trace();
 
     def test_search__equals(self):
         operator = Equals('id', 5, self.schema)
@@ -366,18 +402,38 @@ class TestBPlusTree(unittest.TestCase):
         ]
         self.assertEquals(result[:8], expected)
 
-    # def test_insert(self):
-        # operator = Equals('id', 11, self.schema)
-        # search = self.tree.search(operator)
-        # result = next(search)
-        # expected = Iterator.EOF
-        # self.assertEquals(result, expected)
+    def test_insert(self):
+        # -------------
+        operator = Equals('id', 11, self.schema)
 
-        # new_tuple = (11, 'Flanahan', '45', 'funny business')
-        # self.tree.insert(new_tuple)
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = Iterator.EOF
+        self.assertEquals(result, expected)
 
-        # search = self.tree.search(operator)
-        # result = next(search)
-        # expected = new_tuple
-        # self.assertEquals(result, expected)
+        new_tuple = (11, 'Flanahan', '45', 'funny business')
+        self.tree.insert(new_tuple)
+
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = new_tuple
+        self.assertEquals(result, expected)
+
+        # -------------
+
+        operator = Equals('id', 6.5, self.schema)
+
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = Iterator.EOF
+        self.assertEquals(result, expected)
+
+        new_tuple = (6.5, 'Jenkins', '54', 'funky business')
+        self.tree.insert(new_tuple)
+
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = new_tuple
+
+        self.assertEquals(result, expected)
 
