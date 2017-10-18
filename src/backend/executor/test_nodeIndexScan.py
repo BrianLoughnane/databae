@@ -11,15 +11,18 @@ from operators import Equals, LessThan, GreaterThan
 DELIMITER = 3
 
 class Node():
-    def __init__(self, values=[]):
+    def __init__(self, values):
         self.values = values
+        self._next = None
+        self._prev = None
         self.parent = None
 
 class LeafNode(Node):
     def __init__(self, values):
-        super().__init__(values=values)
+        self.values = values
         self._next = None
         self._prev = None
+        self.parent = None
 
     def __iter__(self):
         return iter(self.values)
@@ -80,6 +83,7 @@ class LinkedList():
             node._prev = last_node
             last_node._next = node
             last_node = node
+
         self.first_node = first_node
         self.last_node = last_node
 
@@ -101,6 +105,10 @@ class IndexNode(Node):
     where value is the minval for the node that
     pointer is pointing at
     '''
+    def __init__(self, values=[]):
+        self.values = values
+        self.parent = None
+
     def __iter__(self):
         return iter(self.values)
 
@@ -209,43 +217,33 @@ class BPlusTree():
     def _yield_from(self, value):
         yield from value
 
-    def _node_selector(self, node, operator):
-        for ii, record in enumerate(node):
-            record_value = self.projection(record)
-            if operator.check(record):
-                yield value
-
-    def _node_updater(self, node, operator, update):
-        for ii, record in enumerate(node):
-            record_value = self.projection(record)
-            if operator.check(record):
-                node.update(ii, update)
-        return record_value
-
     def iterate_over_leaf(self, operator, node, update=None):
         value = operator.get_value()
 
-        if update:
-            last_record_value = self._node_updater(node, operator, update)
-        else:
-            last_record_value = self._node_selector(node, operator)
+        for ii, record in enumerate(node):
+            record_value = self.projection(record)
+            if operator.check(record):
+                if update:
+                    node.update(ii, update)
+                else:
+                    return self._yield(record)
 
         if operator.isGreaterThan:
             if not node._next:
-                self._yield(Iterator.EOF)
+                return self._yield(Iterator.EOF)
             else:
-                self._yield_from(self.iterate_over_leaf(
+                return self._yield_from(self.iterate_over_leaf(
                     operator, node._next, update=update))
 
-        if operator.isLessThan and last_record_value < value:
+        if operator.isLessThan and record_value < value:
             if not node._next:
-                self._yield(Iterator.EOF)
+                return self._yield(Iterator.EOF)
 
             else:
-                self._yield_from(self.iterate_over_leaf(
+                return self._yield_from(self.iterate_over_leaf(
                     operator, node._next, update=update))
 
-        self._yield(Iterator.EOF)
+        return self._yield(Iterator.EOF)
 
     def get_min_leaf_node(self, node=None):
         node = node or self.root
