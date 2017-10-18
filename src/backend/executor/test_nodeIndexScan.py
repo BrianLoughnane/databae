@@ -17,6 +17,11 @@ class Node():
         self._prev = None
         self.parent = None
 
+    # def __repr__(self):
+        # print(type(self))
+        # print(self.values)
+        # return ''
+
 class LeafNode(Node):
     def __init__(self, values):
         self.values = values
@@ -30,11 +35,6 @@ class LeafNode(Node):
     def add(self, record, projection):
         self.values.append(record)
         self.values.sort(key=projection)
-
-    def update(self, index, transform):
-        original = self.values[index]
-        new = tuple(transform([*original]))
-        self.values[index] = new
 
     def has_room(self):
         return len(self.values) < DELIMITER
@@ -211,39 +211,47 @@ class BPlusTree():
 
             return index_page_max
 
-    def _yield(self, value):
-        yield value
-
-    def _yield_from(self, value):
-        yield from value
-
-    def iterate_over_leaf(self, operator, node, update=None):
+    def iterate_over_leaf(self, operator, node):
         value = operator.get_value()
-
-        for ii, record in enumerate(node):
+        for record in node:
             record_value = self.projection(record)
             if operator.check(record):
-                if update:
-                    node.update(ii, update)
-                else:
-                    return self._yield(record)
+                yield record
 
         if operator.isGreaterThan:
             if not node._next:
-                return self._yield(Iterator.EOF)
+                yield Iterator.EOF
             else:
-                return self._yield_from(self.iterate_over_leaf(
-                    operator, node._next, update=update))
+                yield from self.iterate_over_leaf(
+                    operator, node._next)
 
         if operator.isLessThan and record_value < value:
             if not node._next:
-                return self._yield(Iterator.EOF)
+                yield Iterator.EOF
 
             else:
-                return self._yield_from(self.iterate_over_leaf(
-                    operator, node._next, update=update))
+                yield from self.iterate_over_leaf(
+                    operator, node._next)
 
-        return self._yield(Iterator.EOF)
+        yield Iterator.EOF
+
+
+    def search(self, operator, node=None):
+        value = operator.get_value()
+
+        node = node or self.root
+
+        if isinstance(node, LeafNode):
+            return self.iterate_over_leaf(operator, node)
+
+        elif operator.isEquals or operator.isGreaterThan:
+            leaf_node = self.get_leaf_node_for_value(value)
+            return self.iterate_over_leaf(operator, leaf_node)
+
+        elif operator.isLessThan:
+            # for less than, start at first leaf node
+            min_leaf_node = self.get_min_leaf_node()
+            return self.iterate_over_leaf(operator, min_leaf_node)
 
     def get_min_leaf_node(self, node=None):
         node = node or self.root
@@ -273,28 +281,6 @@ class BPlusTree():
             node=(previous_pointer or pointer)
         )
 
-    def search(self, operator, node=None, update=None):
-        value = operator.get_value()
-        node = node or self.root
-
-        if isinstance(node, LeafNode):
-            return self.iterate_over_leaf(
-                operator, node, update=update)
-
-        elif operator.isEquals or operator.isGreaterThan:
-            leaf_node = self.get_leaf_node_for_value(value)
-            return self.iterate_over_leaf(
-                operator, leaf_node, update=update)
-
-        elif operator.isLessThan:
-            # for less than, start at first leaf node
-            min_leaf_node = self.get_min_leaf_node()
-            return self.iterate_over_leaf(
-                operator, min_leaf_node, update=update)
-
-    def update(self, operator, callback):
-        self.search(operator, update=callback)
-
     def insert(self, record):
         index_value = self.projection(record)
         leaf_node = self.get_leaf_node_for_value(index_value)
@@ -302,13 +288,16 @@ class BPlusTree():
 
     def leaves(self):
         node = self.get_min_leaf_node()
+
         nodes = [node]
         while True:
             node = node._next
             if not node:
                 break
             nodes.append(node)
+
         return nodes
+
 
     def print_leaves(self):
         node = self.get_min_leaf_node()
@@ -448,19 +437,3 @@ class TestBPlusTree(unittest.TestCase):
 
         self.assertEquals(result, expected)
 
-    def test_update(self):
-        '''
-        record = (10, 'Flanagan', '44', 'funny business')
-        '''
-        operator = Equals('id', 10, self.schema)
-
-        def update(record):
-           record[2] = '100'
-           return record
-
-        search = self.tree.update(operator, update)
-        search = self.tree.search(operator)
-        result = next(search)
-        expected = (10, 'Flanagan', '100', 'funny business')
-
-        self.assertEquals(result, expected)
