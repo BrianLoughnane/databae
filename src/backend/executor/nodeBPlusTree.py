@@ -133,8 +133,16 @@ class IndexNode(Node):
     def get_tuple(self):
         return (self.minval(), self)
 
-class BPlusTree():
-    def __init__(self, lst, projection):
+class BPlusTree(Iterator):
+    def __init__(self, data, projection):
+        # assumes data is sorted on the index key
+
+        # create a bunch of leaf note "pages" representing heap
+        leaf_nodes = LeafNode.create_pages_from_data(data)
+
+        # create a linked list over the heap pages
+        lst = LinkedList(leaf_nodes)
+
         self.projection = projection
         self.create_index_tree_over_linked_list(lst)
 

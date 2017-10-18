@@ -7,12 +7,16 @@ class Iterator():
     def __next__(self):
         raise ValueError('Not Implemented')
 
-    def __close__(self):
-        for _input in self._inputs:
-            _input.__close__()
-
     def __iter__(self):
         return self
+
+    def __close__(self):
+        pass
+
+    def close_input(self, _input):
+        for _input in self._inputs:
+            if hasattr(_input, '__close__'):
+                _input.__close__()
 
     @staticmethod
     def parse_args(schema, args):

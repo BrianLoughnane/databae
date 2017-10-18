@@ -7,6 +7,9 @@ from executor.helpers import (
     Debug, Print
 )
 
+import operators
+
+from executor.nodeBPlusTree import BPlusTree
 from executor.nodeCount import Count
 from executor.nodeIndexScan import IndexScan
 from executor.nodeScan import Scan
@@ -377,6 +380,94 @@ class TestExecute(unittest.TestCase):
         )))
 
         self.assertEquals(result, expected_joins)
+
+    def test_mem_index_scan__count(self):
+        schema = ('id', 'name', 'age', 'major')
+        data = [
+          (1, 'Brian', '30', 'eng'),
+          (2, 'Jason', '33', 'econ'),
+          (3, 'Christie', '28', 'accounting'),
+          (4, 'Gayle', '33', 'edu'),
+          (5, 'Carolyn', '33', 'econ'),
+          (6, 'Michael', '65', 'law'),
+          (7, 'Lori', '62', 'business')
+        ]
+
+        # index on id
+        projection = lambda r: r[0]
+
+        operator = operators.GreaterThan('id', 4, schema)
+
+        result = list(execute(tree(
+            [Count(),
+                [BPlusTree(data, projection).search(operator)]
+            ]
+        )))
+        expected = [
+          (3,)
+        ]
+        self.assertEquals(result, expected)
+
+    def test_mem_index_scan__projection(self):
+        schema = ('id', 'name', 'age', 'major')
+        data = [
+          (1, 'Brian', '30', 'eng'),
+          (2, 'Jason', '33', 'econ'),
+          (3, 'Christie', '28', 'accounting'),
+          (4, 'Gayle', '33', 'edu'),
+          (5, 'Carolyn', '33', 'econ'),
+          (6, 'Michael', '65', 'law'),
+          (7, 'Lori', '62', 'business')
+        ]
+
+        # index on id
+        projection = lambda r: r[0]
+
+        operator = operators.GreaterThan('id', 4, schema)
+
+        result = list(execute(tree(
+            [Projection(lambda r: r[1]),
+                [BPlusTree(data, projection).search(operator)]
+            ]
+        )))
+        expected = [
+          ('Carolyn'),
+          ('Michael'),
+          ('Lori')
+        ]
+        self.assertEquals(result, expected)
+
+    def test_mem_index_scan__sort(self):
+        schema = ('id', 'name', 'age', 'major')
+        data = [
+          (1, 'Brian', 30, 'eng'),
+          (2, 'Jason', 33, 'econ'),
+          (3, 'Christie', 28, 'accounting'),
+          (4, 'Gayle', 33, 'edu'),
+          (5, 'Carolyn', 33, 'econ'),
+          (6, 'Michael', 65, 'law'),
+          (7, 'Lori', 62, 'business')
+        ]
+
+        # index on age
+        projection = lambda r: r[2]
+        operator = operators.LessThan('age', 34, schema)
+
+        result = list(execute(tree(
+            [Sort(lambda r: (r[1], r[0])),
+                [Projection(lambda r: (r[1], r[2])),
+                    [BPlusTree(data, projection).search(operator)]
+                ]
+            ]
+        )))
+        expected = [
+          ('Christie', '28'),
+          ('Brian', '30'),
+          ('Carolyn', '33'),
+          ('Gayle', '33'),
+          ('Jason', '33'),
+        ]
+        self.assertEquals(result, expected)
 
     # def test_index_scan(self):
         # result = list(execute(tree(

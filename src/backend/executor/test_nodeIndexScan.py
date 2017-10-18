@@ -3,8 +3,7 @@ import unittest
 from executor.execExpr import tree, execute
 from executor.nodeScan import Scan
 from executor.nodeIterator import Iterator
-from executor.nodeBPlusTree import BPlusTree, LeafNode, LinkedList
-# from executor.nodeIndexScan import MemIndexScan
+from executor.nodeBPlusTree import BPlusTree
 from operators import Equals, LessThan, GreaterThan
 
 class TestBPlusTree(unittest.TestCase):
@@ -24,19 +23,11 @@ class TestBPlusTree(unittest.TestCase):
           (10, 'Flanagan', '44', 'funny business'),
         ]
 
-        # assumes data is sorted on the index key
-
-        # create a bunch of leaf note "pages" representing heap
-        leaf_nodes = LeafNode.create_pages_from_data(self.data)
-
-        # create a linked list over the heap pages
-        lst = LinkedList(leaf_nodes)
-
         # projection gets indexed column value
         projection = lambda r: r[0]
 
         # create a tree over the indexed vals in the list(B+ tree)
-        self.tree = BPlusTree(lst, projection)
+        self.tree = BPlusTree(self.data, projection)
 
     def test_search__equals(self):
         operator = Equals('id', 5, self.schema)

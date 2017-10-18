@@ -10,7 +10,7 @@ class Sort(Iterator):
     # I don't know what that number is, so I'm going to make it up as 1000 records
     PARTITION_LIMIT = 1000
 
-    def __init__(self, _sort):
+    def __init__(self, sort_key):
         '''
         Pull in B-1 pages worth of tuples data, quick sort,
         write out to a partition, repeat until EOF.
@@ -20,7 +20,7 @@ class Sort(Iterator):
         A list holds the next values for each partion in memory
         '''
         super().__init__()
-        self._sort = _sort
+        self.sort_key = sort_key
         self.initialized = False
 
     def build_partitions_and_buffers(self):
@@ -60,7 +60,7 @@ class Sort(Iterator):
         filtered_items = list(
             filter(lambda t: t[1] != self.EOF, items))
         sorted_items = sorted(
-            filtered_items, key=lambda item: self._sort(item[1]))
+            filtered_items, key=lambda item: self.sort_key(item[1]))
 
         try:
             scanner_tuple = sorted_items.pop(0)
@@ -98,7 +98,7 @@ class Sort(Iterator):
                 eof = True
                 break
             values.append(_next)
-        return eof, sorted(values, key=self._sort)
+        return eof, sorted(values, key=self.sort_key)
 
     def __next__(self):
         '''

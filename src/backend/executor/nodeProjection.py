@@ -12,16 +12,11 @@ class Projection(Iterator):
         _input = self._inputs[0]
 
         _next = next(_input)
+
         if _next == self.EOF:
-          _input.__close__()
+          self.close_input(_input)
           return self.EOF
         return(self._projector(_next))
-
-    def __close__(self):
-        pass
-
-    def __close__(self):
-        pass
 
     @staticmethod
     def parse_args(schema, args):
