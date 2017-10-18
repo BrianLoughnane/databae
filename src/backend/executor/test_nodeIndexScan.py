@@ -17,11 +17,6 @@ class Node():
         self._prev = None
         self.parent = None
 
-    # def __repr__(self):
-        # print(type(self))
-        # print(self.values)
-        # return ''
-
 class LeafNode(Node):
     def __init__(self, values):
         self.values = values
@@ -372,7 +367,7 @@ class TestBPlusTree(unittest.TestCase):
         self.assertEquals(result, expected)
 
     def test_search__less_than(self):
-        operator = LessThan('id', 7, self.schema)
+        operator = LessThan('id', 6, self.schema)
         search = self.tree.search(operator)
         result = list(search)
         expected = [
@@ -381,10 +376,9 @@ class TestBPlusTree(unittest.TestCase):
           (3, 'Christie', '28', 'accounting'),
           (4, 'Gayle', '33', 'edu'),
           (5, 'Carolyn', '33', 'econ'),
-          (6, 'Michael', '65', 'law'),
           Iterator.EOF,
         ]
-        self.assertEquals(result[:7], expected)
+        self.assertEquals(result[:6], expected)
 
     def test_search__greater_than(self):
         operator = GreaterThan('id', 3, self.schema)
@@ -403,6 +397,11 @@ class TestBPlusTree(unittest.TestCase):
         self.assertEquals(result[:8], expected)
 
     def test_insert(self):
+        '''
+        note - for some reason nosetests is inserting this data
+        before the above search tests, and breaking them if
+        run together
+        '''
         # -------------
         operator = Equals('id', 11, self.schema)
 
@@ -436,4 +435,23 @@ class TestBPlusTree(unittest.TestCase):
         expected = new_tuple
 
         self.assertEquals(result, expected)
+
+        # -------------
+
+        operator = Equals('id', 9.8, self.schema)
+
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = Iterator.EOF
+        self.assertEquals(result, expected)
+
+        new_tuple = (9.8, 'Stewie', '510', 'galavanting')
+        self.tree.insert(new_tuple)
+
+        search = self.tree.search(operator)
+        result = next(search)
+        expected = new_tuple
+
+        self.assertEquals(result, expected)
+
 
